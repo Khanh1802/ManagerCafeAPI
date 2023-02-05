@@ -10,12 +10,10 @@ namespace WebApplicationManagerCafe.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private readonly IMapper _mapper;
         private readonly IProductService _productService;
 
-        public ProductController(IMapper mapper, IProductService productService)
+        public ProductController(IProductService productService)
         {
-            _mapper = mapper;
             _productService = productService;
         }
 
@@ -24,7 +22,11 @@ namespace WebApplicationManagerCafe.Controllers
         {
             try
             {
-                return Ok(await _productService.GetAllAsync());
+                return Ok(new
+                {
+                    IsSuccess = true,
+                    Data = await _productService.GetAllAsync()
+                });
             }
             catch (Exception ex)
             {
@@ -37,7 +39,7 @@ namespace WebApplicationManagerCafe.Controllers
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> FindById(Guid id)
+        public async Task<IActionResult> GetById(Guid id)
         {
             try
             {
@@ -68,6 +70,7 @@ namespace WebApplicationManagerCafe.Controllers
                 });
             }
         }
+
         [HttpPost]
         public async Task<IActionResult> AddAsync(CreateProductDto product)
         {

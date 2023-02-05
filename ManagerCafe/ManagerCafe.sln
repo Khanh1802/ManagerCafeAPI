@@ -5,15 +5,15 @@ VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagerCafe.Data", "ManagerCafe.Data\ManagerCafe.Data.csproj", "{DEC01EBD-224F-462C-918F-32C2DF87F048}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagerCafe-API", "WebApplicationManagerCafe\ManagerCafe-API.csproj", "{A1AC1BE8-8D9C-4AF0-A1AB-AC0EE0E86DEA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagerCafeAPI", "WebApplicationManagerCafe\ManagerCafeAPI.csproj", "{A1AC1BE8-8D9C-4AF0-A1AB-AC0EE0E86DEA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagerCafe.Applications", "ManagerCafe.Applicatioms\ManagerCafe.Applications.csproj", "{4385E70A-CC1C-4E87-A127-FA23586E4BF8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagerCafe.Applications", "ManagerCafe.Applicatioms\ManagerCafe.Applications.csproj", "{4385E70A-CC1C-4E87-A127-FA23586E4BF8}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagerCafe.Contracts", "ManagerCafe.Contracts\ManagerCafe.Contracts.csproj", "{99862964-29E2-46AD-82F4-4504CE2CF81E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagerCafe.Contracts", "ManagerCafe.Contracts\ManagerCafe.Contracts.csproj", "{99862964-29E2-46AD-82F4-4504CE2CF81E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagerCafe.Share", "ManagerCafe.Share\ManagerCafe.Share.csproj", "{8056B381-5540-4A39-8E50-5423FB2F9DC0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagerCafe.Share", "ManagerCafe.Share\ManagerCafe.Share.csproj", "{8056B381-5540-4A39-8E50-5423FB2F9DC0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagerCafe.Domain", "ManagerCafe.Domain\ManagerCafe.Domain.csproj", "{AC277AB3-70B0-42C8-A776-BE3A3ECDCA9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ManagerCafe.Domain", "ManagerCafe.Domain\ManagerCafe.Domain.csproj", "{AC277AB3-70B0-42C8-A776-BE3A3ECDCA9D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
