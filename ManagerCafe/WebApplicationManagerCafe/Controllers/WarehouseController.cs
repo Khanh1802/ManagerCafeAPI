@@ -31,7 +31,7 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode((int) HttpStatusCode.InternalServerError, new
                 {
                     IsSuccess = true,
                     Message = "Server error " + ex.Message
@@ -55,7 +55,7 @@ namespace ManagerCafeAPI.Controllers
                 }
                 else
                 {
-                    return StatusCode((int)HttpStatusCode.OK, new
+                    return StatusCode((int) HttpStatusCode.OK, new
                     {
                         IsSusscess = true,
                         Data = warehouse
@@ -64,7 +64,7 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode((int) HttpStatusCode.InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Server error " + ex.Message
@@ -88,7 +88,7 @@ namespace ManagerCafeAPI.Controllers
                 }
                 else
                 {
-                    return StatusCode((int)HttpStatusCode.OK, new
+                    return StatusCode((int) HttpStatusCode.OK, new
                     {
                         IsSuccess = true,
                         Mesage = "Deleted success"
@@ -97,7 +97,7 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode((int) HttpStatusCode.InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Server error " + ex.Message
@@ -119,13 +119,14 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode((int) HttpStatusCode.InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Server error " + ex.Message
                 });
             }
         }
+
         [HttpPut("{id}")]
         public async Task<IActionResult> Update(UpdateWareHouseDto update)
         {
@@ -142,8 +143,8 @@ namespace ManagerCafeAPI.Controllers
                 }
                 else
                 {
-                    await _warehouseService.UpdateAsync(update);    
-                    return StatusCode((int)HttpStatusCode.OK, new
+                    // await _warehouseService.UpdateAsync(update);    
+                    return StatusCode((int) HttpStatusCode.OK, new
                     {
                         IsSuccess = true,
                         Mesage = "Update success"
@@ -152,7 +153,7 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode((int) HttpStatusCode.InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Server error " + ex.Message

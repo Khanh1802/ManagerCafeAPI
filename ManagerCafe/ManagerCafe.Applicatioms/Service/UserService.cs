@@ -73,6 +73,7 @@ namespace ManagerCafe.Applications.Service
                 {
                     throw new Exception("Not found User to deleted");
                 }
+
                 await _userRepository.Delete(entity);
             }
             catch (Exception ex)
@@ -96,7 +97,7 @@ namespace ManagerCafe.Applications.Service
             return _mapper.Map<User, UserDto>(await _userRepository.GetByIdAsync(key));
         }
 
-        public async Task<UserDto> UpdateAsync(UpdateUserDto item)
+        public async Task<UserDto> UpdateAsync(Guid id, UpdateUserDto item)
         {
             var transaction = await _contex.Database.BeginTransactionAsync();
             try
@@ -106,11 +107,13 @@ namespace ManagerCafe.Applications.Service
                 {
                     throw new Exception("Not found User to update");
                 }
+
                 item.UserName = entity.UserName;
                 if (item.Password == null)
                 {
                     item.Password = entity.Password;
                 }
+
                 var update = _mapper.Map<UpdateUserDto, User>(item, entity);
                 await _userRepository.UpdateAsync(update);
                 await transaction.CommitAsync();
@@ -163,10 +166,12 @@ namespace ManagerCafe.Applications.Service
             {
                 throw new Exception("Password old not correct");
             }
+
             if (passwordNew != passwordNewRepeat)
             {
                 throw new Exception("Password new not same type");
             }
+
             string hashingPasswordNew = CommonCreateMD5.Create(passwordNew);
             //var update = _mapper.Map<UserCacheItem, User>(user);
 
@@ -195,7 +200,7 @@ namespace ManagerCafe.Applications.Service
             item.UserName = user.UserName;
             try
             {
-                await UpdateAsync(item);
+                //await UpdateAsync(item);
                 return true;
             }
             catch (Exception ex)

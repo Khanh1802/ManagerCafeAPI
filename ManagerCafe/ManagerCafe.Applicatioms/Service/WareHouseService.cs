@@ -19,7 +19,8 @@ namespace ManagerCafe.Applications.Service
         private readonly IMemoryCache _memoryCache;
         private readonly IMapper _mapper;
 
-        public WareHouseService(IWareHouseRepository wareHouseRepository, IMapper mapper, IMemoryCache memoryCache, ManagerCafeDbContext context)
+        public WareHouseService(IWareHouseRepository wareHouseRepository, IMapper mapper, IMemoryCache memoryCache,
+            ManagerCafeDbContext context)
         {
             _wareHouseRepository = wareHouseRepository;
             _mapper = mapper;
@@ -54,6 +55,7 @@ namespace ManagerCafe.Applications.Service
                 {
                     throw new Exception("Not found WareHouse to detele");
                 }
+
                 await _wareHouseRepository.Delete(entity);
                 await transaction.CommitAsync();
             }
@@ -78,6 +80,7 @@ namespace ManagerCafe.Applications.Service
             {
                 filters = filters.Where(x => EF.Functions.Like(x.Name, $"%{item.Name}%"));
             }
+
             return _mapper.Map<List<WareHouse>, List<WareHouseDto>>(await filters.ToListAsync());
         }
 
@@ -86,7 +89,7 @@ namespace ManagerCafe.Applications.Service
             if (Enum.IsDefined(typeof(EnumWareHouseFilter), choice))
             {
                 var query = await FilterQueryAbleAsync();
-                switch ((EnumWareHouseFilter)choice)
+                switch ((EnumWareHouseFilter) choice)
                 {
                     case EnumWareHouseFilter.DateAsc:
                         query = query.OrderBy(x => x.CreateTime);
@@ -95,8 +98,11 @@ namespace ManagerCafe.Applications.Service
                         query = query.OrderByDescending(x => x.CreateTime);
                         break;
                 }
-                return new List<WareHouseDto>(_mapper.Map<List<WareHouse>, List<WareHouseDto>>(await query.ToListAsync()));
+
+                return new List<WareHouseDto>(
+                    _mapper.Map<List<WareHouse>, List<WareHouseDto>>(await query.ToListAsync()));
             }
+
             throw new Exception("Not found filter Product");
         }
 
@@ -106,6 +112,7 @@ namespace ManagerCafe.Applications.Service
             {
                 return _mapper.Map<List<WareHouse>, List<WareHouseDto>>(inventories);
             }
+
             var entites = await _wareHouseRepository.GetAllAsync();
             _memoryCache.Set(WarehouseCacheKey.WarehouseAllKey, entites, new MemoryCacheEntryOptions
             {
@@ -120,7 +127,7 @@ namespace ManagerCafe.Applications.Service
             return _mapper.Map<WareHouse, WareHouseDto>(entity);
         }
 
-        public async Task<WareHouseDto> UpdateAsync(UpdateWareHouseDto item)
+        public async Task<WareHouseDto> UpdateAsync(Guid id, UpdateWareHouseDto item)
         {
             var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -130,6 +137,7 @@ namespace ManagerCafe.Applications.Service
                 {
                     throw new Exception("Not found WareHouse to update");
                 }
+
                 var update = _mapper.Map<UpdateWareHouseDto, WareHouse>(item, entity);
                 await _wareHouseRepository.UpdateAsync(update);
                 await transaction.CommitAsync();

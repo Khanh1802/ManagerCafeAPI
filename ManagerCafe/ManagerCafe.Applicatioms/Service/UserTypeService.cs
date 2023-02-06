@@ -17,7 +17,8 @@ namespace ManagerCafe.Applications.Service
         private readonly IUserTypeRepository _userTypeRepository;
         private readonly IMemoryCache _memoryCache;
 
-        public UserTypeService(ManagerCafeDbContext context, IMapper mapper, IUserTypeRepository userTypeRepository, IMemoryCache memoryCache)
+        public UserTypeService(ManagerCafeDbContext context, IMapper mapper, IUserTypeRepository userTypeRepository,
+            IMemoryCache memoryCache)
         {
             _context = context;
             _mapper = mapper;
@@ -50,6 +51,7 @@ namespace ManagerCafe.Applications.Service
                 {
                     throw new Exception("Not found User type to deleted");
                 }
+
                 await _userTypeRepository.Delete(entity);
                 await transaction.CommitAsync();
             }
@@ -71,6 +73,7 @@ namespace ManagerCafe.Applications.Service
             {
                 return _mapper.Map<List<UserType>, List<UserTypeDto>>(value);
             }
+
             var allReuslt = await _userTypeRepository.GetAllAsync();
             _memoryCache.Set<List<UserType>>(UserTypeCacheKey.UserTypeAllKey, allReuslt, new MemoryCacheEntryOptions()
             {
@@ -94,7 +97,7 @@ namespace ManagerCafe.Applications.Service
                 _mapper.Map<List<UserType>, List<UserTypeDto>>(await filter.ToListAsync()));
         }
 
-        public async Task<UserTypeDto> UpdateAsync(UpdateUserTypeDto item)
+        public async Task<UserTypeDto> UpdateAsync(Guid id, UpdateUserTypeDto item)
         {
             var transaction = await _context.Database.BeginTransactionAsync();
             try
@@ -104,7 +107,9 @@ namespace ManagerCafe.Applications.Service
                 {
                     throw new Exception("Not found User type to update");
                 }
-                var update = await _userTypeRepository.UpdateAsync(_mapper.Map<UpdateUserTypeDto, UserType>(item, entity));
+
+                var update =
+                    await _userTypeRepository.UpdateAsync(_mapper.Map<UpdateUserTypeDto, UserType>(item, entity));
                 transaction.Commit();
                 return _mapper.Map<UserType, UserTypeDto>(update);
             }

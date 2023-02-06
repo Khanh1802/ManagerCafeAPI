@@ -1,10 +1,9 @@
-﻿using AutoMapper;
+﻿using System.Net;
 using ManagerCafe.Contracts.Dtos.ProductDtos;
 using ManagerCafe.Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
-namespace WebApplicationManagerCafe.Controllers
+namespace ManagerCafeAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -30,7 +29,7 @@ namespace WebApplicationManagerCafe.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Serve error " + ex.Message
@@ -46,7 +45,7 @@ namespace WebApplicationManagerCafe.Controllers
                 var product = await _productService.GetByIdAsync(id);
                 if (product == null)
                 {
-                    return StatusCode((int)HttpStatusCode.NotFound, new
+                    return StatusCode((int) HttpStatusCode.NotFound, new
                     {
                         IsSusscess = false,
                         Message = "Not found id"
@@ -54,7 +53,7 @@ namespace WebApplicationManagerCafe.Controllers
                 }
                 else
                 {
-                    return StatusCode((int)HttpStatusCode.OK, new
+                    return StatusCode(StatusCodes.Status200OK, new
                     {
                         IsSusscess = true,
                         Data = product
@@ -63,7 +62,7 @@ namespace WebApplicationManagerCafe.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Serve error " + ex.Message
@@ -72,7 +71,7 @@ namespace WebApplicationManagerCafe.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddAsync(CreateProductDto product)
+        public async Task<IActionResult> AddAsync([FromBody] CreateProductDto product)
         {
             try
             {
@@ -86,7 +85,7 @@ namespace WebApplicationManagerCafe.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode((int) HttpStatusCode.InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Serve error " + ex.Message
@@ -95,11 +94,11 @@ namespace WebApplicationManagerCafe.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(UpdateProductDto update)
+        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateProductDto update)
         {
             try
             {
-                await _productService.UpdateAsync(update);
+                await _productService.UpdateAsync(id, update);
                 return Ok(new
                 {
                     IsSuccess = true,
@@ -109,7 +108,7 @@ namespace WebApplicationManagerCafe.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode((int) HttpStatusCode.InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Serve error " + ex.Message
@@ -131,7 +130,7 @@ namespace WebApplicationManagerCafe.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int)HttpStatusCode.InternalServerError, new
+                return StatusCode((int) HttpStatusCode.InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Serve error " + ex.Message

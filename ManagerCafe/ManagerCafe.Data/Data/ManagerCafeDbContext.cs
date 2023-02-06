@@ -15,13 +15,13 @@ namespace ManagerCafe.Data.Data
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            base.OnConfiguring(optionsBuilder);
-            IConfigurationRoot configuration = new ConfigurationBuilder()
-               .SetBasePath(Directory.GetCurrentDirectory())
-               .AddJsonFile("appsettings.json")
-               .Build();
-            var connectionString = configuration.GetConnectionString("ManagerCafe");
-            optionsBuilder.UseSqlServer(connectionString);
+            // base.OnConfiguring(optionsBuilder);
+            // IConfigurationRoot configuration = new ConfigurationBuilder()
+            //    .SetBasePath(Directory.GetCurrentDirectory())
+            //    .AddJsonFile("appsettings.json")
+            //    .Build();
+            // var connectionString = configuration.GetConnectionString("ManagerCafe");
+            // optionsBuilder.UseSqlServer(connectionString);
 
             //optionsBuilder.UseMySql(connectionString, MySqlServerVersion.LatestSupportedServerVersion);
             //optionsBuilder.LogTo(_logStream.WriteLine, LogLevel.Debug);

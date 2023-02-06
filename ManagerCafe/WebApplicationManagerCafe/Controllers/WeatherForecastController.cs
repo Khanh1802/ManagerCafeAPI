@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using WebApplicationManagerCafe;
 
-namespace WebApplicationManagerCafe.Controllers
+namespace ManagerCafeAPI.Controllers
 {
     [ApiController]
     [Route("[controller]")]

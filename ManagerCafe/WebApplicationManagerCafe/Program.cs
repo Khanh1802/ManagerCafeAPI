@@ -16,10 +16,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors(option => option
-.AddDefaultPolicy(x => x
-.AllowAnyOrigin()
-.AllowAnyHeader()
-.AllowAnyMethod()));
+    .AddDefaultPolicy(x => x
+        .AllowAnyOrigin()
+        .AllowAnyHeader()
+        .AllowAnyMethod()));
 //C1:
 //var connectionString = builder.Configuration.GetConnectionString("ManagerCafe");
 //builder.Services.AddDbContext<ManagerCafeDbContext>(options =>
@@ -28,8 +28,8 @@ builder.Services.AddCors(option => option
 //});
 
 //C2:
-builder.Services.AddDbContext<ManagerCafeDbContext>(opts =>
-opts.UseSqlServer(builder.Configuration.GetConnectionString("ManagerCafe")));
+builder.Services.AddDbContextPool<ManagerCafeDbContext>(opts =>
+    opts.UseSqlServer(builder.Configuration.GetConnectionString("ManagerCafe")));
 builder.Services.AddTransient<IProductRepository, ProductRepository>();
 builder.Services.AddTransient<IProductService, ProductService>();
 builder.Services.AddTransient<IWareHouseRepository, WareHouseRepository>();

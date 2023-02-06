@@ -20,7 +20,8 @@ namespace ManagerCafe.Applications.Service
         private readonly IMemoryCache _memoryCache;
         private readonly ManagerCafeDbContext _context;
 
-        public ProductService(IProductRepository productRepository, IMapper mapper, IMemoryCache memoryCache, ManagerCafeDbContext context)
+        public ProductService(IProductRepository productRepository, IMapper mapper, IMemoryCache memoryCache,
+            ManagerCafeDbContext context)
         {
             _productRepository = productRepository;
             _mapper = mapper;
@@ -55,6 +56,7 @@ namespace ManagerCafe.Applications.Service
                 {
                     throw new Exception("Not found Product to delete");
                 }
+
                 await _productRepository.Delete(entity);
                 await transaction.CommitAsync();
             }
@@ -75,7 +77,8 @@ namespace ManagerCafe.Applications.Service
 
             if (!string.IsNullOrEmpty(item.Name))
             {
-                filters = filters.Where(x => EF.Functions.Match(x.Name, $"*{item.Name}*", MySqlMatchSearchMode.Boolean));
+                filters = filters.Where(x =>
+                    EF.Functions.Match(x.Name, $"*{item.Name}*", MySqlMatchSearchMode.Boolean));
             }
 
             if (item.PriceBuy > 0)
@@ -87,6 +90,7 @@ namespace ManagerCafe.Applications.Service
             {
                 filters = filters.Where(x => x.PriceSell == item.PriceSell);
             }
+
             // Hướng vẫn cách xem query
             //var query = filters.ToQueryString();
             return _mapper.Map<List<Product>, List<ProductDto>>(await filters.ToListAsync());
@@ -125,6 +129,7 @@ namespace ManagerCafe.Applications.Service
             {
                 return _mapper.Map<Product, ProductDto>(product);
             }
+
             var entity = await _productRepository.GetByIdAsync(key);
             if (!entity.IsDeleted)
             {
@@ -134,19 +139,21 @@ namespace ManagerCafe.Applications.Service
                 });
                 return _mapper.Map<Product, ProductDto>(entity);
             }
+
             return null;
         }
 
-        public async Task<ProductDto> UpdateAsync(UpdateProductDto item)
+        public async Task<ProductDto> UpdateAsync(Guid id, UpdateProductDto item)
         {
             var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var entity = await _productRepository.GetByIdAsync(item.Id);
+                var entity = await _productRepository.GetByIdAsync(id);
                 if (entity is null)
                 {
                     throw new Exception("Not found Product to update");
                 }
+
                 var update = _mapper.Map<UpdateProductDto, Product>(item, entity);
                 await _productRepository.UpdateAsync(update);
                 await transaction.CommitAsync();
@@ -165,7 +172,7 @@ namespace ManagerCafe.Applications.Service
             {
                 var query = await FilterQueryAbleAsync(item);
                 var count = query.CountAsync();
-                switch ((EnumProductFilter)choice)
+                switch ((EnumProductFilter) choice)
                 {
                     case EnumProductFilter.PriceAsc:
                         query = query.OrderBy(x => x.PriceSell);
@@ -180,9 +187,12 @@ namespace ManagerCafe.Applications.Service
                         query = query.OrderByDescending(x => x.CreateTime);
                         break;
                 }
+
                 query = query.Skip(item.SkipCount).Take(item.TakeMaxResultCount);
-                return new CommonPageDto<ProductDto>(await count, item, _mapper.Map<List<Product>, List<ProductDto>>(await query.ToListAsync()));
+                return new CommonPageDto<ProductDto>(await count, item,
+                    _mapper.Map<List<Product>, List<ProductDto>>(await query.ToListAsync()));
             }
+
             return new CommonPageDto<ProductDto>();
         }
 
@@ -200,10 +210,13 @@ namespace ManagerCafe.Applications.Service
             {
                 products = products.Where(x => EF.Functions.Like(x.Name, $"%{filter.Name}%"));
                 return new CommonPageDto<SearchProductDto>
-                    (await products.CountAsync(), filter, await products.Skip(filter.SkipCount).Take(filter.TakeMaxResultCount).ToListAsync());
+                (await products.CountAsync(), filter,
+                    await products.Skip(filter.SkipCount).Take(filter.TakeMaxResultCount).ToListAsync());
             }
+
             return new CommonPageDto<SearchProductDto>
-                (await products.CountAsync(), filter, await products.Skip(filter.SkipCount).Take(filter.TakeMaxResultCount).ToListAsync());
+            (await products.CountAsync(), filter,
+                await products.Skip(filter.SkipCount).Take(filter.TakeMaxResultCount).ToListAsync());
         }
     }
 }
