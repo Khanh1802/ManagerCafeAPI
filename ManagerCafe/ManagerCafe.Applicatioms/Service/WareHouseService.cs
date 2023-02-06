@@ -132,7 +132,7 @@ namespace ManagerCafe.Applications.Service
             var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var entity = await _wareHouseRepository.GetByIdAsync(item.Id);
+                var entity = await _wareHouseRepository.GetByIdAsync(id);
                 if (entity == null)
                 {
                     throw new Exception("Not found WareHouse to update");
