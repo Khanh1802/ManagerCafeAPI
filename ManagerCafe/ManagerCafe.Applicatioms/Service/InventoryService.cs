@@ -185,7 +185,7 @@ namespace ManagerCafe.Contracts.Services
             var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var entity = await _inventoryRepository.GetByIdAsync(item.Id);
+                var entity = await _inventoryRepository.GetByIdAsync(id);
                 if (entity is null)
                 {
                     throw new Exception("Not found Inventory to delete");
@@ -194,13 +194,12 @@ namespace ManagerCafe.Contracts.Services
                 var update = _mapper.Map<UpdateInventoryDto, Inventory>(item, entity);
                 await _inventoryRepository.UpdateAsync(update);
 
-                //var a = await _inventoryRepository.GetAllAsync();
                 // Khi ko bị lỗi thì save tất cả thay đổi xuống Db
                 //1
                 var inventoryTransaction = new CreateInventoryTransactionDto()
                 {
                     Quatity = item.Quatity,
-                    InventoryId = item.Id,
+                    InventoryId = id,
                     Type = EnumInventoryTransation.Import
                 };
                 await _inventoryTransactionService.AddAsync(inventoryTransaction);

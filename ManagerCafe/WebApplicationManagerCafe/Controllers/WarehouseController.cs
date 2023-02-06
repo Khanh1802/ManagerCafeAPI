@@ -19,7 +19,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAll()
+        public async Task<IActionResult> GetAllAsync()
         {
             try
             {
@@ -31,16 +31,16 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int) HttpStatusCode.InternalServerError, new
+                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
-                    IsSuccess = true,
+                    IsSuccess = false,
                     Message = "Server error " + ex.Message
                 });
             }
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(Guid id)
+        public async Task<IActionResult> GetByIdAsync(Guid id)
         {
             try
             {
@@ -55,7 +55,7 @@ namespace ManagerCafeAPI.Controllers
                 }
                 else
                 {
-                    return StatusCode((int) HttpStatusCode.OK, new
+                    return StatusCode(StatusCodes.Status200OK, new
                     {
                         IsSusscess = true,
                         Data = warehouse
@@ -64,7 +64,7 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int) HttpStatusCode.InternalServerError, new
+                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Server error " + ex.Message
@@ -73,7 +73,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> Delete(Guid id)
+        public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
             {
@@ -88,7 +88,7 @@ namespace ManagerCafeAPI.Controllers
                 }
                 else
                 {
-                    return StatusCode((int) HttpStatusCode.OK, new
+                    return StatusCode(StatusCodes.Status200OK, new
                     {
                         IsSuccess = true,
                         Mesage = "Deleted success"
@@ -97,7 +97,7 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int) HttpStatusCode.InternalServerError, new
+                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Server error " + ex.Message
@@ -106,7 +106,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddWarehouse(CreateWareHouseDto create)
+        public async Task<IActionResult> AddAsync(CreateWareHouseDto create)
         {
             try
             {
@@ -119,7 +119,7 @@ namespace ManagerCafeAPI.Controllers
             }
             catch (Exception ex)
             {
-                return StatusCode((int) HttpStatusCode.InternalServerError, new
+                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Server error " + ex.Message
@@ -128,32 +128,20 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(UpdateWareHouseDto update)
+        public async Task<IActionResult> UpdateAsync(Guid id, UpdateWareHouseDto update)
         {
             try
             {
-                var warehouse = await _warehouseService.GetByIdAsync(update.Id);
-                if (warehouse == null)
+                await _warehouseService.UpdateAsync(id, update);
+                return StatusCode(StatusCodes.Status200OK, new
                 {
-                    return Ok(new
-                    {
-                        IsSuccess = false,
-                        Message = "Not found id"
-                    });
-                }
-                else
-                {
-                    // await _warehouseService.UpdateAsync(update);    
-                    return StatusCode((int) HttpStatusCode.OK, new
-                    {
-                        IsSuccess = true,
-                        Mesage = "Update success"
-                    });
-                }
+                    IsSuccess = true,
+                    Mesage = "UpdateAsync success"
+                });
             }
             catch (Exception ex)
             {
-                return StatusCode((int) HttpStatusCode.InternalServerError, new
+                return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
                     Message = "Server error " + ex.Message

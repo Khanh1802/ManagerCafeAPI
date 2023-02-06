@@ -1,5 +1,5 @@
-﻿using System.Net;
-using ManagerCafe.Contracts.Dtos.ProductDtos;
+﻿using ManagerCafe.Applications.Service;
+using ManagerCafe.Contracts.Dtos.InventoryDtos;
 using ManagerCafe.Contracts.Services;
 using Microsoft.AspNetCore.Mvc;
 
@@ -7,15 +7,14 @@ namespace ManagerCafeAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ProductController : ControllerBase
+    public class InventoryController : ControllerBase
     {
-        private readonly IProductService _productService;
+        private readonly IInventoryService _inventoryService;
 
-        public ProductController(IProductService productService)
+        public InventoryController(IInventoryService inventoryService)
         {
-            _productService = productService;
+            _inventoryService = inventoryService;
         }
-
         [HttpGet]
         public async Task<IActionResult> GetAllAsync()
         {
@@ -24,7 +23,7 @@ namespace ManagerCafeAPI.Controllers
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = await _productService.GetAllAsync()
+                    Data = await _inventoryService.GetAllAsync()
                 });
             }
             catch (Exception ex)
@@ -32,7 +31,7 @@ namespace ManagerCafeAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
-                    Message = "Serve error " + ex.Message
+                    Message = "Server error " + ex.Message
                 });
             }
         }
@@ -42,12 +41,12 @@ namespace ManagerCafeAPI.Controllers
         {
             try
             {
-                var product = await _productService.GetByIdAsync(id);
-                if (product == null)
+                var inventory = await _inventoryService.GetByIdAsync(id);
+                if (inventory == null)
                 {
-                    return StatusCode(StatusCodes.Status404NotFound, new
+                    return Ok(new
                     {
-                        IsSusscess = true,
+                        IsSuccess = true,
                         Message = "Not found id"
                     });
                 }
@@ -56,7 +55,7 @@ namespace ManagerCafeAPI.Controllers
                     return StatusCode(StatusCodes.Status200OK, new
                     {
                         IsSusscess = true,
-                        Data = product
+                        Data = inventory
                     });
                 }
             }
@@ -65,53 +64,7 @@ namespace ManagerCafeAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
-                    Message = "Serve error " + ex.Message
-                });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> AddAsync([FromBody] CreateProductDto product)
-        {
-            try
-            {
-                await _productService.AddAsync(product);
-                return Ok(new
-                {
-                    IsSuccess = true,
-                    Data = product,
-                    Message = "Create success"
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    IsSuccess = false,
-                    Message = "Serve error " + ex.Message
-                });
-            }
-        }
-
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateProductDto update)
-        {
-            try
-            {
-                await _productService.UpdateAsync(id, update);
-                return Ok(new
-                {
-                    IsSuccess = true,
-                    Data = update,
-                    Message = "UpdateAsync success"
-                });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    IsSuccess = false,
-                    Message = "Serve error " + ex.Message
+                    Message = "Server error " + ex.Message
                 });
             }
         }
@@ -121,11 +74,44 @@ namespace ManagerCafeAPI.Controllers
         {
             try
             {
-                await _productService.DeleteAsync(id);
+                var inventory = await _inventoryService.GetByIdAsync(id);
+                if (inventory == null)
+                {
+                    return Ok(new
+                    {
+                        IsSuccess = false,
+                        Message = "Not found id"
+                    });
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status200OK, new
+                    {
+                        IsSuccess = true,
+                        Mesage = "Deleted success"
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = "Server error " + ex.Message
+                });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddAsync(CreatenInvetoryDto create)
+        {
+            try
+            {
+                await _inventoryService.AddAsync(create);
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Message = "Deleted success"
+                    Data = create
                 });
             }
             catch (Exception ex)
@@ -133,7 +119,29 @@ namespace ManagerCafeAPI.Controllers
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,
-                    Message = "Serve error " + ex.Message
+                    Message = "Server error " + ex.Message
+                });
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateAsync(Guid id, UpdateInventoryDto update)
+        {
+            try
+            {
+                await _inventoryService.UpdateAsync(id, update);
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    IsSuccess = true,
+                    Mesage = "UpdateAsync success"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = "Server error " + ex.Message
                 });
             }
         }
