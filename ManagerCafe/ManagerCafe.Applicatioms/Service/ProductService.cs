@@ -8,6 +8,7 @@ using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -151,7 +152,7 @@ namespace ManagerCafe.Applications.Service
                 var entity = await _productRepository.GetByIdAsync(id);
                 if (entity is null)
                 {
-                    throw new Exception("Not found Product to update");
+                    throw new NotFoundException("Not found product with id: " + id);
                 }
 
                 var update = _mapper.Map<UpdateProductDto, Product>(item, entity);
@@ -172,7 +173,7 @@ namespace ManagerCafe.Applications.Service
             {
                 var query = await FilterQueryAbleAsync(item);
                 var count = query.CountAsync();
-                switch ((EnumProductFilter) choice)
+                switch ((EnumProductFilter)choice)
                 {
                     case EnumProductFilter.PriceAsc:
                         query = query.OrderBy(x => x.PriceSell);

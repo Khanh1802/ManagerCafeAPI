@@ -1,6 +1,7 @@
 ﻿using System.Net;
 using ManagerCafe.Contracts.Dtos.ProductDtos;
 using ManagerCafe.Contracts.Services;
+using ManagerCafe.Share.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ManagerCafeAPI.Controllers
@@ -17,7 +18,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync()
+        public async Task<IActionResult> GetAllAsync(/*[FromBody] string name*/)
         {
             try
             {
@@ -71,7 +72,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddAsync([FromBody] CreateProductDto product)
+        public async Task<IActionResult> AddAsync([FromForm] CreateProductDto product)
         {
             try
             {
@@ -98,12 +99,21 @@ namespace ManagerCafeAPI.Controllers
         {
             try
             {
-                await _productService.UpdateAsync(id, update);
+               var put =  await _productService.UpdateAsync(id, update);
+
                 return Ok(new
                 {
                     IsSuccess = true,
                     Data = update,
                     Message = "UpdateAsync success"
+                });
+            }
+            catch (NotFoundException ex)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new
+                {
+                    IsSuccess = false,
+                    Message = "Serve error " + ex.Message
                 });
             }
             catch (Exception ex)
