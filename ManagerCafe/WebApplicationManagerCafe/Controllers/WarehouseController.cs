@@ -2,6 +2,7 @@
 using ManagerCafe.Contracts.Dtos.WareHouseDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
@@ -73,6 +74,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
@@ -106,6 +108,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> AddAsync(CreateWareHouseDto create)
         {
             try
@@ -128,6 +131,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateAsync(Guid id, UpdateWareHouseDto update)
         {
             try

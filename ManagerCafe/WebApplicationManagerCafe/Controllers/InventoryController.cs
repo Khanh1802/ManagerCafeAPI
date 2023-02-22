@@ -1,6 +1,7 @@
 ﻿using ManagerCafe.Applications.Service;
 using ManagerCafe.Contracts.Dtos.InventoryDtos;
 using ManagerCafe.Contracts.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ManagerCafeAPI.Controllers
@@ -70,6 +71,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
@@ -103,6 +105,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPost]
+        [Authorize]
         public async Task<IActionResult> AddAsync(CreatenInvetoryDto create)
         {
             try
@@ -125,6 +128,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateAsync(Guid id, UpdateInventoryDto update)
         {
             try

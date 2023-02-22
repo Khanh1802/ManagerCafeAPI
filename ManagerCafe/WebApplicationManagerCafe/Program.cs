@@ -4,7 +4,11 @@ using ManagerCafe.Contracts.Dtos.UsersDtos.ValidateUserDto;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Settings;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +34,22 @@ builder.Services.AddCors(option => option
 //C2:
 builder.Services.AddDbContextPool<ManagerCafeDbContext>(opts =>
     opts.UseSqlServer(builder.Configuration.GetConnectionString("ManagerCafe")));
+
+builder.Services.Configure<Setting>(builder.Configuration.GetSection("AppSettings"));
+var serectKey = builder.Configuration["AppSettings:SecretKey"];
+var serectKeyBytes = Encoding.UTF8.GetBytes(serectKey);
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(otp =>
+otp.TokenValidationParameters = new TokenValidationParameters
+{
+    // tu cap Token
+    ValidateIssuer = false,
+    ValidateAudience = false,
+
+    TryAllIssuerSigningKeys = true,
+    IssuerSigningKey = new SymmetricSecurityKey(serectKeyBytes),
+    ClockSkew = TimeSpan.Zero
+});
 
 builder.Services.AddTransient<IProductRepository, ProductRepository>();
 builder.Services.AddTransient<IProductService, ProductService>();
@@ -65,7 +85,7 @@ app.UseSwaggerUI();
 //}
 
 app.UseHttpsRedirection();
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

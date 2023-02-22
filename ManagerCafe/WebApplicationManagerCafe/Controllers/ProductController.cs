@@ -2,6 +2,7 @@
 using ManagerCafe.Contracts.Dtos.ProductDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Share.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ManagerCafeAPI.Controllers
@@ -10,6 +11,8 @@ namespace ManagerCafeAPI.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+        private const int _takeCount = 5;
+        private const int _orderByPrice = 1;
         private readonly IProductService _productService;
 
         public ProductController(IProductService productService)
@@ -18,14 +21,28 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllAsync(/*[FromBody] string name*/)
+        public async Task<IActionResult> GetAllAsync(int indexPage)
         {
             try
             {
+                var data = await _productService.GetPagedListAsync(new FilterProductDto()
+                {
+                    SkipCount = (indexPage - 1) * _takeCount,
+                    TakeMaxResultCount = _takeCount,
+                    CurrentPage = indexPage
+                }, _orderByPrice);
+                if(data.Data.Count == 0)
+                {
+                    return StatusCode(StatusCodes.Status404NotFound, new
+                    {
+                        IsSuccess = false,
+                        Message = "Not found data"
+                    });
+                }
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = await _productService.GetAllAsync()
+                    Data = data.Data
                 });
             }
             catch (Exception ex)
@@ -72,7 +89,8 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddAsync([FromForm] CreateProductDto product)
+        [Authorize]
+        public async Task<IActionResult> AddAsync([FromBody] CreateProductDto product)
         {
             try
             {
@@ -95,6 +113,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPut("{id}")]
+        [Authorize]
         public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateProductDto update)
         {
             try
@@ -105,7 +124,7 @@ namespace ManagerCafeAPI.Controllers
                 {
                     IsSuccess = true,
                     Data = update,
-                    Message = "UpdateAsync success"
+                    Message = "Update success"
                 });
             }
             catch (NotFoundException ex)
@@ -127,6 +146,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
@@ -136,6 +156,14 @@ namespace ManagerCafeAPI.Controllers
                 {
                     IsSuccess = true,
                     Message = "Deleted success"
+                });
+            }
+            catch(NotFoundException ex)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new
+                {
+                    IsSuccess = false,
+                    Message = "Serve error " + ex.Message
                 });
             }
             catch (Exception ex)
