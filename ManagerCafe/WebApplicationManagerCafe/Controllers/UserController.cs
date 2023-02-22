@@ -25,7 +25,7 @@ namespace ManagerCafeAPI.Controllers
             _mapper = mapper;
         }
 
-        [HttpPost]
+        [HttpPost/*("Login")*/]
         public async Task<IActionResult> GetUser(LoginUser loginUser)
         {
             try

@@ -11,7 +11,6 @@ namespace ManagerCafeAPI.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private const int _takeCount = 5;
         private const int _orderByPrice = 1;
         private readonly IProductService _productService;
 
@@ -20,15 +19,15 @@ namespace ManagerCafeAPI.Controllers
             _productService = productService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllAsync(int indexPage)
+        [HttpGet("Page")]
+        public async Task<IActionResult> GetAllAsync(int indexPage,int maxRecord)
         {
             try
             {
                 var data = await _productService.GetPagedListAsync(new FilterProductDto()
                 {
-                    SkipCount = (indexPage - 1) * _takeCount,
-                    TakeMaxResultCount = _takeCount,
+                    SkipCount = (indexPage - 1) * maxRecord,
+                    TakeMaxResultCount = maxRecord,
                     CurrentPage = indexPage
                 }, _orderByPrice);
                 if(data.Data.Count == 0)
