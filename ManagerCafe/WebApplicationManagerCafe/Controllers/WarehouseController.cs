@@ -10,6 +10,7 @@ namespace ManagerCafeAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class WarehouseController : ControllerBase
     {
         private readonly IWareHouseService _warehouseService;
@@ -19,7 +20,7 @@ namespace ManagerCafeAPI.Controllers
             _warehouseService = warehouseService;
         }
 
-        [HttpGet]
+        [HttpGet("GetAll")]
         public async Task<IActionResult> GetAllAsync()
         {
             try
@@ -73,8 +74,7 @@ namespace ManagerCafeAPI.Controllers
             }
         }
 
-        [HttpDelete("{id}")]
-        [Authorize]
+        [HttpDelete("{id}")] 
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
@@ -108,7 +108,6 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> AddAsync(CreateWareHouseDto create)
         {
             try
@@ -131,7 +130,6 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> UpdateAsync(Guid id, UpdateWareHouseDto update)
         {
             try

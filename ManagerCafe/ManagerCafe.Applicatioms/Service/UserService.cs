@@ -128,7 +128,7 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public async Task<bool> LoginAsync(string userName, string password)
+        public async Task<UserDto> LoginAsync(string userName, string password)
         {
             var hashingPassword = CommonCreateMD5.Create(password);
             var user = await (await _userRepository.GetQueryableAsync())
@@ -141,12 +141,11 @@ namespace ManagerCafe.Applications.Service
                 _context.Update(user);
                 await _context.SaveChangesAsync();
                 //AddAsync to cache
-                _userCacheService.Set(_mapper.Map<User, UserCacheItem>(user));
+                //_userCacheService.Set(_mapper.Map<User, UserCacheItem>(user));
 
-                return true;
+                return _mapper.Map<User, UserDto>(user);
             }
-
-            return false;
+            return null;
         }
 
         public async Task<bool> CheckUserNameExistAysnc(string item)
@@ -194,12 +193,12 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public async Task<bool> UpdateInfomation(Guid id,UpdateUserDto item)
+        public async Task<bool> UpdateInfomation(Guid id, UpdateUserDto item)
         {
             var hashingPassword = CommonCreateMD5.Create(item.Password);
             try
             {
-                await UpdateAsync(id,item);
+                await UpdateAsync(id, item);
                 return true;
             }
             catch (Exception ex)
@@ -211,12 +210,7 @@ namespace ManagerCafe.Applications.Service
         public async Task<UserDto> Validate(LoginUser loginUser)
         {
             var login = await LoginAsync(loginUser.UserName, loginUser.Password);
-            if (login == true)
-            {
-                var user = _context.Users.FirstOrDefault(x => x.UserName == loginUser.UserName);
-                return _mapper.Map<User, UserDto>(user);
-            }
-            return null;
+            return login;
         }
     }
 }

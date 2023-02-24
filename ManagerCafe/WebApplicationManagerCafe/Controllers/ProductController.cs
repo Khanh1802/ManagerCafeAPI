@@ -1,5 +1,4 @@
-﻿using System.Net;
-using ManagerCafe.Contracts.Dtos.ProductDtos;
+﻿using ManagerCafe.Contracts.Dtos.ProductDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Share.Exceptions;
 using Microsoft.AspNetCore.Authorization;
@@ -9,6 +8,7 @@ namespace ManagerCafeAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductController : ControllerBase
     {
         private const int _orderByPrice = 1;
@@ -19,25 +19,17 @@ namespace ManagerCafeAPI.Controllers
             _productService = productService;
         }
 
-        [HttpGet("Page")]
-        public async Task<IActionResult> GetAllAsync(int indexPage,int maxRecord)
+        [HttpGet("GetAll")]
+        public async Task<IActionResult> GetAllAsync(int SkipCount, int MaxResultCount)
         {
             try
             {
                 var data = await _productService.GetPagedListAsync(new FilterProductDto()
                 {
-                    SkipCount = (indexPage - 1) * maxRecord,
-                    TakeMaxResultCount = maxRecord,
-                    CurrentPage = indexPage
+                    SkipCount = SkipCount,
+                    TakeMaxResultCount = MaxResultCount,
+                    CurrentPage = (int)Math.Ceiling((double)SkipCount / MaxResultCount) + 1,
                 }, _orderByPrice);
-                if(data.Data.Count == 0)
-                {
-                    return StatusCode(StatusCodes.Status404NotFound, new
-                    {
-                        IsSuccess = false,
-                        Message = "Not found data"
-                    });
-                }
                 return Ok(new
                 {
                     IsSuccess = true,
@@ -87,8 +79,45 @@ namespace ManagerCafeAPI.Controllers
             }
         }
 
+
+        [HttpGet("Name")]
+        public async Task<IActionResult> GetByIdAsync(string name)
+        {
+            try
+            {
+                var filter = new FilterProductDto()
+                {
+                    Name = name
+                };
+                var product = await _productService.FilterAsync(filter);
+                if (product == null)
+                {
+                    return StatusCode(StatusCodes.Status404NotFound, new
+                    {
+                        IsSusscess = true,
+                        Message = "Not found id"
+                    });
+                }
+                else
+                {
+                    return StatusCode(StatusCodes.Status200OK, new
+                    {
+                        IsSusscess = true,
+                        Data = product
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = "Serve error " + ex.Message
+                });
+            }
+        }
+
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> AddAsync([FromBody] CreateProductDto product)
         {
             try
@@ -112,12 +141,11 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> UpdateAsync(Guid id, [FromBody] UpdateProductDto update)
         {
             try
             {
-               var put =  await _productService.UpdateAsync(id, update);
+                var put = await _productService.UpdateAsync(id, update);
 
                 return Ok(new
                 {
@@ -145,7 +173,6 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
@@ -157,7 +184,7 @@ namespace ManagerCafeAPI.Controllers
                     Message = "Deleted success"
                 });
             }
-            catch(NotFoundException ex)
+            catch (NotFoundException ex)
             {
                 return StatusCode(StatusCodes.Status404NotFound, new
                 {

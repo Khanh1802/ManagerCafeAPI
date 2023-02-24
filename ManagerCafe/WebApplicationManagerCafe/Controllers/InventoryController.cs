@@ -8,6 +8,7 @@ namespace ManagerCafeAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class InventoryController : ControllerBase
     {
         private readonly IInventoryService _inventoryService;
@@ -16,7 +17,7 @@ namespace ManagerCafeAPI.Controllers
         {
             _inventoryService = inventoryService;
         }
-        [HttpGet]
+        [HttpGet("GetAll")]
         public async Task<IActionResult> GetAllAsync()
         {
             try
@@ -71,7 +72,6 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try
@@ -105,7 +105,6 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPost]
-        [Authorize]
         public async Task<IActionResult> AddAsync(CreatenInvetoryDto create)
         {
             try
@@ -128,7 +127,6 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize]
         public async Task<IActionResult> UpdateAsync(Guid id, UpdateInventoryDto update)
         {
             try

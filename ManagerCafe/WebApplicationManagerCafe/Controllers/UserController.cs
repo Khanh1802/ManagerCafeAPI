@@ -2,6 +2,7 @@
 using ManagerCafe.Contracts.Dtos.UsersDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Share.Settings;
+using ManagerCafeAPI.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,16 +17,16 @@ namespace ManagerCafeAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
-        private readonly Setting _setting;
         private readonly IMapper _mapper;
-        public UserController(IUserService userService,IOptionsMonitor<Setting> options, IMapper mapper)
+        private readonly AuthenticationOption _options;
+        public UserController(IUserService userService, IMapper mapper, IOptions<AuthenticationOption> options)
         {
             _userService = userService;
-            _setting = options.CurrentValue;
             _mapper = mapper;
+            _options = options.Value;
         }
 
-        [HttpPost/*("Login")*/]
+        [HttpPost("Login")]
         public async Task<IActionResult> GetUser(LoginUser loginUser)
         {
             try
@@ -59,7 +60,7 @@ namespace ManagerCafeAPI.Controllers
         private string GenerateToken(UserDto userDto)
         {
             var jwtTokenHandler = new JwtSecurityTokenHandler();
-            var secretKeyBytes = Encoding.UTF8.GetBytes(_setting.SecretKey);
+            var secretKeyBytes = Encoding.UTF8.GetBytes(_options.SecretKey);
             var tokenDescription = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new[]

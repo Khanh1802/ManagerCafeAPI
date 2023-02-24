@@ -79,7 +79,7 @@ namespace ManagerCafe.Applications.Service
             if (!string.IsNullOrEmpty(item.Name))
             {
                 filters = filters.Where(x =>
-                    EF.Functions.Match(x.Name, $"*{item.Name}*", MySqlMatchSearchMode.Boolean));
+                    EF.Functions.Like(x.Name, $"{item.Name}%"));
             }
 
             if (item.PriceBuy > 0)
