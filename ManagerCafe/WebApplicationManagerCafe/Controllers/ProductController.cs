@@ -11,7 +11,6 @@ namespace ManagerCafeAPI.Controllers
     [Authorize]
     public class ProductController : ControllerBase
     {
-        private const int _orderByPrice = 1;
         private readonly IProductService _productService;
 
         public ProductController(IProductService productService)
@@ -19,17 +18,12 @@ namespace ManagerCafeAPI.Controllers
             _productService = productService;
         }
 
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllAsync(int SkipCount, int MaxResultCount)
+        [HttpPost("GetAll")]
+        public async Task<IActionResult> GetAllAsync([FromBody] FilterProductDto filter)
         {
             try
             {
-                var data = await _productService.GetPagedListAsync(new FilterProductDto()
-                {
-                    SkipCount = SkipCount,
-                    TakeMaxResultCount = MaxResultCount,
-                    CurrentPage = (int)Math.Ceiling((double)SkipCount / MaxResultCount) + 1,
-                }, _orderByPrice);
+                var data = await _productService.GetPagedListAsync(filter);
                 return Ok(new
                 {
                     IsSuccess = true,
@@ -44,89 +38,18 @@ namespace ManagerCafeAPI.Controllers
                     Message = "Serve error " + ex.Message
                 });
             }
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(Guid id)
-        {
-            try
-            {
-                var product = await _productService.GetByIdAsync(id);
-                if (product == null)
-                {
-                    return StatusCode(StatusCodes.Status404NotFound, new
-                    {
-                        IsSusscess = true,
-                        Message = "Not found id"
-                    });
-                }
-                else
-                {
-                    return StatusCode(StatusCodes.Status200OK, new
-                    {
-                        IsSusscess = true,
-                        Data = product
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    IsSuccess = false,
-                    Message = "Serve error " + ex.Message
-                });
-            }
-        }
-
-
-        [HttpGet("Name")]
-        public async Task<IActionResult> GetByIdAsync(string name)
-        {
-            try
-            {
-                var filter = new FilterProductDto()
-                {
-                    Name = name
-                };
-                var product = await _productService.FilterAsync(filter);
-                if (product == null)
-                {
-                    return StatusCode(StatusCodes.Status404NotFound, new
-                    {
-                        IsSusscess = true,
-                        Message = "Not found id"
-                    });
-                }
-                else
-                {
-                    return StatusCode(StatusCodes.Status200OK, new
-                    {
-                        IsSusscess = true,
-                        Data = product
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    IsSuccess = false,
-                    Message = "Serve error " + ex.Message
-                });
-            }
-        }
+        }    
 
         [HttpPost]
         public async Task<IActionResult> AddAsync([FromBody] CreateProductDto product)
         {
             try
             {
-                await _productService.AddAsync(product);
+                var createProduct = await _productService.AddAsync(product);
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = product,
+                    Data = createProduct,
                     Message = "Create success"
                 });
             }
@@ -145,12 +68,12 @@ namespace ManagerCafeAPI.Controllers
         {
             try
             {
-                var put = await _productService.UpdateAsync(id, update);
+                var updateProduct = await _productService.UpdateAsync(id, update);
 
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = update,
+                    Data = updateProduct,
                     Message = "Update success"
                 });
             }

@@ -82,26 +82,19 @@ namespace ManagerCafe.Applications.Service
                     EF.Functions.Like(x.Name, $"{item.Name}%"));
             }
 
-            if (item.PriceBuy > 0)
-            {
-                filters = filters.Where(x => x.PriceBuy == item.PriceBuy);
-            }
+            //if (item.PriceBuy > 0)
+            //{
+            //    filters = filters.Where(x => x.PriceBuy == item.PriceBuy);
+            //}
 
-            if (item.PriceSell > 0)
-            {
-                filters = filters.Where(x => x.PriceSell == item.PriceSell);
-            }
+            //if (item.PriceSell > 0)
+            //{
+            //    filters = filters.Where(x => x.PriceSell == item.PriceSell);
+            //}
 
             // Hướng vẫn cách xem query
             //var query = filters.ToQueryString();
             return _mapper.Map<List<Product>, List<ProductDto>>(await filters.ToListAsync());
-        }
-
-        private async Task<IQueryable<Product>> FilterQueryAbleAsync(FilterProductDto item)
-        {
-            var query = await _productRepository.GetQueryableAsync();
-            var filter = query.Where(x => !x.IsDeleted);
-            return filter;
         }
 
         public async Task<List<ProductDto>> GetAllAsync()
@@ -167,13 +160,32 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public async Task<CommonPageDto<ProductDto>> GetPagedListAsync(FilterProductDto item, int choice)
+        private async Task<IQueryable<Product>> FilterQueryAbleAsync(FilterProductDto item)
         {
-            if (Enum.IsDefined(typeof(EnumProductFilter), choice))
+            var query = await _productRepository.GetQueryableAsync();
+            var filter = query.Where(x => !x.IsDeleted);
+            if (item.Id.HasValue && string.IsNullOrEmpty(item.Name))
+            {
+                filter = filter.Where(x => x.Id == item.Id);
+            }
+            if (!string.IsNullOrEmpty(item.Name) && item.Id.HasValue)
+            {
+                filter = filter.Where(x => EF.Functions.Like(x.Name, $"%{item.Name.Trim()}%"));
+            }
+            if (item.PriceMin >= 0 && item.PriceMax > 0)
+            {
+                filter = filter.Where(x => x.PriceSell >= item.PriceMin && x.PriceSell <= item.PriceMax);
+            }
+            return filter;
+        }
+
+        public async Task<CommonPageDto<ProductDto>> GetPagedListAsync(FilterProductDto item)
+        {
+            if (Enum.IsDefined(typeof(EnumProductFilter), item.Choice))
             {
                 var query = await FilterQueryAbleAsync(item);
                 var count = query.CountAsync();
-                switch ((EnumProductFilter)choice)
+                switch ((EnumProductFilter)item.Choice)
                 {
                     case EnumProductFilter.PriceAsc:
                         query = query.OrderBy(x => x.PriceSell);

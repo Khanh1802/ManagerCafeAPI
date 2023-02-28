@@ -68,7 +68,7 @@ namespace ManagerCafeAPI.Controllers
                     new Claim(ClaimTypes.Name,userDto.FullName),
                     new Claim(ClaimTypes.Email,userDto.Email)
                 }),
-                Expires = DateTime.UtcNow.AddMinutes(15),
+                Expires = DateTime.UtcNow.AddMinutes(60),
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(secretKeyBytes), SecurityAlgorithms.HmacSha256)
             };

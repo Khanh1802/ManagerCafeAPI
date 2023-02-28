@@ -1,6 +1,7 @@
 ﻿using ManagerCafe.Applications.Service;
 using ManagerCafe.Contracts.Dtos.InventoryDtos;
 using ManagerCafe.Contracts.Services;
+using ManagerCafe.Share.Exceptions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,49 +18,17 @@ namespace ManagerCafeAPI.Controllers
         {
             _inventoryService = inventoryService;
         }
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllAsync()
+        [HttpPost("GetAll")]
+        public async Task<IActionResult> GetAllAsync([FromBody]FilterInventoryDto filter)
         {
             try
             {
+                var data = await _inventoryService.GetPagedListAsync(filter);
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = await _inventoryService.GetAllAsync()
+                    Data = data.Data
                 });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    IsSuccess = false,
-                    Message = "Server error " + ex.Message
-                });
-            }
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(Guid id)
-        {
-            try
-            {
-                var inventory = await _inventoryService.GetByIdAsync(id);
-                if (inventory == null)
-                {
-                    return Ok(new
-                    {
-                        IsSuccess = true,
-                        Message = "Not found id"
-                    });
-                }
-                else
-                {
-                    return StatusCode(StatusCodes.Status200OK, new
-                    {
-                        IsSusscess = true,
-                        Data = inventory
-                    });
-                }
             }
             catch (Exception ex)
             {
@@ -114,6 +83,14 @@ namespace ManagerCafeAPI.Controllers
                 {
                     IsSuccess = true,
                     Data = create
+                });
+            }
+            catch(ConflictException ex)
+            {
+                return StatusCode(StatusCodes.Status409Conflict, new
+                {
+                    IsSuccess = false,
+                    Message = "Server error " + ex.Message
                 });
             }
             catch (Exception ex)

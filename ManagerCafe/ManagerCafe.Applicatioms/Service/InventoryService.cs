@@ -9,6 +9,7 @@ using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
@@ -35,17 +36,16 @@ namespace ManagerCafe.Contracts.Services
         public async Task<InventoryDto> AddAsync(CreatenInvetoryDto item)
         {
             var entity = new Inventory();
-            var filter = await FilterAsync(new FilterInventoryDto()
+            var filter = await FilterInventoryAsync(new FilterInventoryDto()
             {
                 ProductId = item.ProductId,
                 WareHouseId = item.WareHouseId,
             });
-            if (filter.Count > 0)
+            if (filter != null)
             {
-                var inventory = filter.FirstOrDefault();
-                if (inventory is not null)
+                if (filter is not null)
                 {
-                    throw new Exception("Inventory have been create");
+                    throw new ConflictException("Inventory have been create");
                 }
             }
             else
@@ -96,7 +96,7 @@ namespace ManagerCafe.Contracts.Services
             }
         }
 
-        public async Task<List<InventoryDto>> FilterAsync(FilterInventoryDto item)
+        public async Task<InventoryDto> FilterInventoryAsync(FilterInventoryDto item)
         {
             var filter = await _inventoryRepository.GetQueryableAsync();
 
@@ -110,12 +110,12 @@ namespace ManagerCafe.Contracts.Services
                 filter = filter.Where(x => x.WareHouseId == item.WareHouseId);
             }
 
-            var dataGirdView = await filter
+            var inventory = await filter
                 .Include(x => x.WareHouse)
                 .Include(x => x.Product)
                 .Where(x => !x.Product.IsDeleted && !x.WareHouse.IsDeleted)
-                .ToListAsync();
-            return _mapper.Map<List<Inventory>, List<InventoryDto>>(dataGirdView);
+                .FirstOrDefaultAsync();
+            return _mapper.Map<Inventory, InventoryDto>(inventory);
         }
 
         public async Task<List<InventoryDto>> GetAllAsync()
@@ -139,13 +139,27 @@ namespace ManagerCafe.Contracts.Services
             return _mapper.Map<Inventory, InventoryDto>(entity);
         }
 
-        public async Task<CommonPageDto<InventoryDto>> GetPagedListAsync(FilterInventoryDto item, int choice)
+        public async Task<CommonPageDto<InventoryDto>> GetPagedListAsync(FilterInventoryDto item)
         {
-            if (Enum.IsDefined(typeof(EnumChoiceFilter), choice))
+            if (Enum.IsDefined(typeof(EnumChoiceFilter), item.Choice))
             {
                 var query = await FilterQueryAbleAsync(item);
                 var count = query.CountAsync();
-                switch ((EnumChoiceFilter) choice)
+                if ((item.WareHouseId.HasValue && item.ProductId.HasValue) && !item.Id.HasValue && string.IsNullOrEmpty(item.NameSearch))
+                {
+                    query = query.Where(x => x.WareHouseId == item.WareHouseId);
+                    query = query.Where(x => x.ProductId == item.ProductId);
+                }
+                if (item.Id.HasValue)
+                {
+                    query = query.Where(x => x.Id == item.Id);
+                }
+                if (!string.IsNullOrEmpty(item.NameSearch))
+                {
+                    query = query.Where(x => EF.Functions.Like(x.Product.Name, $"{item.NameSearch}") ||
+                    EF.Functions.Like(x.WareHouse.Name, $"%{item.NameSearch}%"));
+                }
+                switch ((EnumChoiceFilter)item.Choice)
                 {
                     case EnumChoiceFilter.DateAsc:
                         query = query.OrderBy(x => x.CreateTime);
@@ -188,9 +202,9 @@ namespace ManagerCafe.Contracts.Services
                 var entity = await _inventoryRepository.GetByIdAsync(id);
                 if (entity is null)
                 {
-                    throw new Exception("Not found Inventory to delete");
+                    throw new Exception("Not found Inventory to update");
                 }
-
+                item.Quatity += entity.Quatity;
                 var update = _mapper.Map<UpdateInventoryDto, Inventory>(item, entity);
                 await _inventoryRepository.UpdateAsync(update);
 
@@ -254,6 +268,11 @@ namespace ManagerCafe.Contracts.Services
             orderDetails = orderDetails
                 .Where(x => queryInventory.Select(k => k.ProductId).Contains(x.ProductId))
                 .ToList();
+        }
+
+        public Task<List<InventoryDto>> FilterAsync(FilterInventoryDto item)
+        {
+            throw new NotImplementedException();
         }
     }
 }

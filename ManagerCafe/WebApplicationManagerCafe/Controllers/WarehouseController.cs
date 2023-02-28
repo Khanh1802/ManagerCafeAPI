@@ -1,10 +1,7 @@
-﻿using AutoMapper;
-using ManagerCafe.Contracts.Dtos.WareHouseDtos;
+﻿using ManagerCafe.Contracts.Dtos.WareHouseDtos;
 using ManagerCafe.Contracts.Services;
-using ManagerCafe.Data.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Net;
 
 namespace ManagerCafeAPI.Controllers
 {
@@ -20,15 +17,16 @@ namespace ManagerCafeAPI.Controllers
             _warehouseService = warehouseService;
         }
 
-        [HttpGet("GetAll")]
-        public async Task<IActionResult> GetAllAsync()
+        [HttpPost("GetAll")]
+        public async Task<IActionResult> GetAllAsync([FromBody] FilterWareHouseDto filter)
         {
             try
             {
+                var data = await _warehouseService.GetPagedListAsync(filter);
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = await _warehouseService.GetAllAsync()
+                    Data = data.Data
                 });
             }
             catch (Exception ex)
@@ -41,40 +39,7 @@ namespace ManagerCafeAPI.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(Guid id)
-        {
-            try
-            {
-                var warehouse = await _warehouseService.GetByIdAsync(id);
-                if (warehouse == null)
-                {
-                    return Ok(new
-                    {
-                        IsSuccess = true,
-                        Message = "Not found id"
-                    });
-                }
-                else
-                {
-                    return StatusCode(StatusCodes.Status200OK, new
-                    {
-                        IsSusscess = true,
-                        Data = warehouse
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    IsSuccess = false,
-                    Message = "Server error " + ex.Message
-                });
-            }
-        }
-
-        [HttpDelete("{id}")] 
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAsync(Guid id)
         {
             try

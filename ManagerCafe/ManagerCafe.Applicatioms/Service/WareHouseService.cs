@@ -89,7 +89,7 @@ namespace ManagerCafe.Applications.Service
             if (Enum.IsDefined(typeof(EnumWareHouseFilter), choice))
             {
                 var query = await FilterQueryAbleAsync();
-                switch ((EnumWareHouseFilter) choice)
+                switch ((EnumWareHouseFilter)choice)
                 {
                     case EnumWareHouseFilter.DateAsc:
                         query = query.OrderBy(x => x.CreateTime);
@@ -150,9 +150,26 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public Task<CommonPageDto<WareHouseDto>> GetPagedListAsync(FilterWareHouseDto item)
+        public async Task<CommonPageDto<WareHouseDto>> GetPagedListAsync(FilterWareHouseDto item)
         {
-            throw new NotImplementedException();
+            var query = await FilterQueryAbleAsync(item);
+            var count = query.CountAsync(); query = query.Skip(item.SkipCount).Take(item.TakeMaxResultCount);
+            return new CommonPageDto<WareHouseDto>(await count, item,
+                _mapper.Map<List<WareHouse>, List<WareHouseDto>>(await query.ToListAsync()));
+        }
+        private async Task<IQueryable<WareHouse>> FilterQueryAbleAsync(FilterWareHouseDto item)
+        {
+            var query = await _wareHouseRepository.GetQueryableAsync();
+            var filter = query.Where(x => !x.IsDeleted);
+            if (item.Id.HasValue && string.IsNullOrEmpty(item.Name))
+            {
+                filter = filter.Where(x => x.Id == item.Id);
+            }
+            if (!string.IsNullOrEmpty(item.Name) && !item.Id.HasValue)
+            {
+                filter = filter.Where(x => EF.Functions.Like(x.Name, $"%{item.Name.Trim()}%"));
+            }
+            return filter;
         }
     }
 }

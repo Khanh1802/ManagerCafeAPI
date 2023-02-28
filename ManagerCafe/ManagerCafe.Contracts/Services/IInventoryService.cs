@@ -6,7 +6,7 @@ namespace ManagerCafe.Contracts.Services
 {
     public interface IInventoryService : IGenericService<InventoryDto, CreatenInvetoryDto, UpdateInventoryDto, FilterInventoryDto, Guid>
     {
-        Task<CommonPageDto<InventoryDto>> GetPagedListAsync(FilterInventoryDto item, int choice);
+        Task<CommonPageDto<InventoryDto>> GetPagedListAsync(FilterInventoryDto item);
         Task<List<InventoryDto>> FindByIdProductAndWarehouse(FilterInventoryDto item);
         Task<InventoryOrderDetail> GetInventoryOrderDetail(Guid productId);
 
