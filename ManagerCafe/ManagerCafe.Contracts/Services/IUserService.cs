@@ -7,9 +7,11 @@ namespace ManagerCafe.Contracts.Services
     {
         Task<bool> CheckUserNameExistAysnc(string item);
 
-        Task<bool> LoginAsync(string userName, string password);
+        Task<UserDto> LoginAsync(string userName, string password);
 
         Task<bool> UpdatePassword(string passwordOld, string passwordNew, string passworldNewRepeat);
-        Task<bool> UpdateInfomation(UpdateUserDto item);
+        Task<bool> UpdateInfomation(Guid id, UpdateUserDto item);
+
+        Task<UserDto> Validate(LoginUser loginUser);
     }
 }

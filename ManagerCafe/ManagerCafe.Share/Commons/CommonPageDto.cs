@@ -14,14 +14,18 @@
         }
         public CommonPageDto(int total, PaginationDto pagination, List<T> data)
         {
-            Total = total;
-            TakeMaxResultCount = pagination.TakeMaxResultCount;
-            SkipCount = pagination.SkipCount;
-            CurrentPage = pagination.CurrentPage;
-            TotalPage = (int)Math.Ceiling((double)Total / (CurrentPage * TakeMaxResultCount - SkipCount));
-            HasReversePage = CurrentPage > 1;
-            HasNextPage = CurrentPage < TotalPage;
-            Data = data;
+
+            var currentPage = (int)Math.Ceiling((double)pagination.SkipCount / pagination.TakeMaxResultCount) + 1;
+            if(currentPage > 0)
+            {
+                Total = total;
+                TakeMaxResultCount = pagination.TakeMaxResultCount;
+                SkipCount = pagination.SkipCount;
+                TotalPage = (int)Math.Ceiling((double)Total / (currentPage * TakeMaxResultCount - SkipCount));
+                HasReversePage = currentPage > 1;
+                HasNextPage = currentPage < TotalPage;
+                Data = data;
+            }
         }
     }
 }

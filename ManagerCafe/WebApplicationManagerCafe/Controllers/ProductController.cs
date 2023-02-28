@@ -1,13 +1,14 @@
-﻿using System.Net;
-using ManagerCafe.Contracts.Dtos.ProductDtos;
+﻿using ManagerCafe.Contracts.Dtos.ProductDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Share.Exceptions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ManagerCafeAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
@@ -17,15 +18,16 @@ namespace ManagerCafeAPI.Controllers
             _productService = productService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetAllAsync(/*[FromBody] string name*/)
+        [HttpPost("GetAll")]
+        public async Task<IActionResult> GetAllAsync([FromBody] FilterProductDto filter)
         {
             try
             {
+                var data = await _productService.GetPagedListAsync(filter);
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = await _productService.GetAllAsync()
+                    Data = data.Data
                 });
             }
             catch (Exception ex)
@@ -36,51 +38,18 @@ namespace ManagerCafeAPI.Controllers
                     Message = "Serve error " + ex.Message
                 });
             }
-        }
-
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetByIdAsync(Guid id)
-        {
-            try
-            {
-                var product = await _productService.GetByIdAsync(id);
-                if (product == null)
-                {
-                    return StatusCode(StatusCodes.Status404NotFound, new
-                    {
-                        IsSusscess = true,
-                        Message = "Not found id"
-                    });
-                }
-                else
-                {
-                    return StatusCode(StatusCodes.Status200OK, new
-                    {
-                        IsSusscess = true,
-                        Data = product
-                    });
-                }
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, new
-                {
-                    IsSuccess = false,
-                    Message = "Serve error " + ex.Message
-                });
-            }
-        }
+        }    
 
         [HttpPost]
-        public async Task<IActionResult> AddAsync([FromForm] CreateProductDto product)
+        public async Task<IActionResult> AddAsync([FromBody] CreateProductDto product)
         {
             try
             {
-                await _productService.AddAsync(product);
+                var createProduct = await _productService.AddAsync(product);
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = product,
+                    Data = createProduct,
                     Message = "Create success"
                 });
             }
@@ -99,13 +68,13 @@ namespace ManagerCafeAPI.Controllers
         {
             try
             {
-               var put =  await _productService.UpdateAsync(id, update);
+                var updateProduct = await _productService.UpdateAsync(id, update);
 
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = update,
-                    Message = "UpdateAsync success"
+                    Data = updateProduct,
+                    Message = "Update success"
                 });
             }
             catch (NotFoundException ex)
@@ -136,6 +105,14 @@ namespace ManagerCafeAPI.Controllers
                 {
                     IsSuccess = true,
                     Message = "Deleted success"
+                });
+            }
+            catch (NotFoundException ex)
+            {
+                return StatusCode(StatusCodes.Status404NotFound, new
+                {
+                    IsSuccess = false,
+                    Message = "Serve error " + ex.Message
                 });
             }
             catch (Exception ex)

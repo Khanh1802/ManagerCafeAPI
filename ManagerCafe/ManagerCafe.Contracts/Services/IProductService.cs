@@ -7,7 +7,7 @@ namespace ManagerCafe.Contracts.Services
     public interface IProductService :
         IGenericService<ProductDto, CreateProductDto, UpdateProductDto, FilterProductDto, Guid>
     {
-        Task<CommonPageDto<ProductDto>> GetPagedListAsync(FilterProductDto item, int choice);
+        Task<CommonPageDto<ProductDto>> GetPagedListAsync(FilterProductDto item);
         Task<CommonPageDto<SearchProductDto>> SearchProductAsync(FilterProductDto filter);
     }
 }

@@ -8,31 +8,32 @@ using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using System.ComponentModel;
 
 namespace ManagerCafe.Applications.Service
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
-        private readonly ManagerCafeDbContext _contex;
+        private readonly ManagerCafeDbContext _context;
         private readonly IMapper _mapper;
         private readonly IUserValidate _userValidate;
         private readonly IUserCacheService _userCacheService;
 
         public UserService(IUserRepository userRepository,
             IMapper mapper, IUserValidate userValidate,
-            IUserCacheService userCacheService, ManagerCafeDbContext contex)
+            IUserCacheService userCacheService, ManagerCafeDbContext context)
         {
             _userRepository = userRepository;
             _mapper = mapper;
             _userValidate = userValidate;
             _userCacheService = userCacheService;
-            _contex = contex;
+            _context = context;
         }
 
         public async Task<UserDto> AddAsync(CreateUserDto item)
         {
-            var transaction = await _contex.Database.BeginTransactionAsync();
+            var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 if (await CheckUserNameExistAysnc(item.UserName) != false)
@@ -65,7 +66,7 @@ namespace ManagerCafe.Applications.Service
 
         public async Task DeleteAsync(Guid key)
         {
-            var transaction = await _contex.Database.BeginTransactionAsync();
+            var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var entity = await _userRepository.GetByIdAsync(key);
@@ -99,10 +100,10 @@ namespace ManagerCafe.Applications.Service
 
         public async Task<UserDto> UpdateAsync(Guid id, UpdateUserDto item)
         {
-            var transaction = await _contex.Database.BeginTransactionAsync();
+            var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
-                var entity = await _userRepository.GetByIdAsync(item.Id);
+                var entity = await _userRepository.GetByIdAsync(id);
                 if (entity == null)
                 {
                     throw new Exception("Not found User to update");
@@ -127,7 +128,7 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public async Task<bool> LoginAsync(string userName, string password)
+        public async Task<UserDto> LoginAsync(string userName, string password)
         {
             var hashingPassword = CommonCreateMD5.Create(password);
             var user = await (await _userRepository.GetQueryableAsync())
@@ -137,15 +138,14 @@ namespace ManagerCafe.Applications.Service
             {
                 //Delete last login
                 user.LastLoginTime = DateTime.Now;
-                _contex.Update(user);
-                await _contex.SaveChangesAsync();
+                _context.Update(user);
+                await _context.SaveChangesAsync();
                 //AddAsync to cache
-                _userCacheService.Set(_mapper.Map<User, UserCacheItem>(user));
+                //_userCacheService.Set(_mapper.Map<User, UserCacheItem>(user));
 
-                return true;
+                return _mapper.Map<User, UserDto>(user);
             }
-
-            return false;
+            return null;
         }
 
         public async Task<bool> CheckUserNameExistAysnc(string item)
@@ -175,15 +175,15 @@ namespace ManagerCafe.Applications.Service
             string hashingPasswordNew = CommonCreateMD5.Create(passwordNew);
             //var update = _mapper.Map<UserCacheItem, User>(user);
 
-            var transaction = await _contex.Database.BeginTransactionAsync();
+            var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var update = await _userRepository.GetByIdAsync(user.Id);
                 update.Password = hashingPasswordNew;
-                _contex.Update(update);
+                _context.Update(update);
                 await transaction.CommitAsync();
                 // cache set nhưng bị lỗi nên đã remove
-                await _contex.SaveChangesAsync();
+                await _context.SaveChangesAsync();
                 return true;
             }
             catch (Exception ex)
@@ -193,20 +193,24 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public async Task<bool> UpdateInfomation(UpdateUserDto item)
+        public async Task<bool> UpdateInfomation(Guid id, UpdateUserDto item)
         {
-            var user = _contex.Users.AsNoTracking().Where(x => x.Id == item.Id).SingleOrDefault();
-            item.Password = user.Password;
-            item.UserName = user.UserName;
+            var hashingPassword = CommonCreateMD5.Create(item.Password);
             try
             {
-                //await UpdateAsync(item);
+                await UpdateAsync(id, item);
                 return true;
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
+        }
+
+        public async Task<UserDto> Validate(LoginUser loginUser)
+        {
+            var login = await LoginAsync(loginUser.UserName, loginUser.Password);
+            return login;
         }
     }
 }
