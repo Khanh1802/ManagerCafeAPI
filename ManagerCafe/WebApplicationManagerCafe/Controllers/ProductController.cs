@@ -82,7 +82,7 @@ namespace ManagerCafeAPI.Controllers
                 return StatusCode(StatusCodes.Status404NotFound, new
                 {
                     IsSuccess = false,
-                    Message = "Serve error " + ex.Message
+                    Message = "Error " + ex.Message
                 });
             }
             catch (Exception ex)
@@ -112,7 +112,7 @@ namespace ManagerCafeAPI.Controllers
                 return StatusCode(StatusCodes.Status404NotFound, new
                 {
                     IsSuccess = false,
-                    Message = "Serve error " + ex.Message
+                    Message = "Error " + ex.Message
                 });
             }
             catch (Exception ex)

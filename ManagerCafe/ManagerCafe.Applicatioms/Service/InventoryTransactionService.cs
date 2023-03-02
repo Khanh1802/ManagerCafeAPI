@@ -29,24 +29,43 @@ namespace ManagerCafe.Contracts.Services
             await _inventoryTransactionRepository.AddAsync(create);
         }
 
-        private async Task<IQueryable<InventoryTransactionDto>> FilterQueryStatisticAbleAsync(FilterInventoryTransactionDto item)
+        private async Task<IQueryable<InventoryTransaction>> IQueryInventoryTransaction()
         {
             var query = await _inventoryTransactionRepository.GetQueryableAsync();
-            var filter = query
-                .Include(x => x.Inventory)
-                .ThenInclude(k => k.Product)
-                .Include(x => x.Inventory)
-                .ThenInclude(k => k.WareHouse)
-                .Where(x => !x.Inventory.IsDeleted)
-                .GroupBy(x => x.InventoryId).Select(x => new InventoryTransactionDto
-                {
-                    CreateTime = x.FirstOrDefault().CreateTime,
-                    ProductName = x.FirstOrDefault().Inventory.Product.Name,
-                    WarehouseName = x.FirstOrDefault().Inventory.WareHouse.Name,
-                    Quatity = x.Sum(k => k.Quatity),
-                    Type = x.FirstOrDefault().Type,
-                    InventoryId = x.FirstOrDefault().InventoryId,
-                });
+            query = query.Include(x => x.Inventory)
+                    .ThenInclude(x => x.Product)
+                    .Include(x => x.Inventory)
+                    .ThenInclude(x => x.WareHouse)
+                    .Where(x => !x.Inventory.IsDeleted);
+            return query;
+        }
+        private async Task<IQueryable<InventoryTransactionDto>> FilterPageAsync(FilterInventoryTransactionDto item)
+        {
+            var query = await IQueryInventoryTransaction();
+            if (item.Id.HasValue || !string.IsNullOrEmpty(item.NameSearch))
+            {
+                query = query.Where(x => (x.Inventory.Id == item.Id ||
+                EF.Functions.Like(x.Inventory.WareHouse.Name, $"%{item.NameSearch.Trim()}%")
+                   || EF.Functions.Like(x.Inventory.Product.Name, $"%{item.NameSearch.Trim()}%")));
+            }
+            else if (item.ProductId.HasValue && item.WarehouseId.HasValue)
+            {
+                query = query.Where(x => x.Inventory.ProductId == item.ProductId && x.Inventory.WareHouseId == item.WarehouseId);
+            }
+            var filter = query.GroupBy(x => x.InventoryId).Select(x => new InventoryTransactionDto
+            {
+                CreateTime = x.FirstOrDefault().CreateTime,
+                ProductName = x.FirstOrDefault().Inventory.Product.Name,
+                WarehouseName = x.FirstOrDefault().Inventory.WareHouse.Name,
+                Quatity = x.Sum(k => k.Quatity),
+                Type = x.FirstOrDefault().Type,
+                InventoryId = x.FirstOrDefault().InventoryId,
+            });
+            if (item.FromDate.HasValue && item.ToDate.HasValue)
+            {
+                var toDate = item.ToDate?.AddDays(1).AddSeconds(-1);
+                filter = filter.Where(x => x.CreateTime >= item.FromDate && x.CreateTime <= item.ToDate);
+            }
             return filter;
         }
 
@@ -56,14 +75,15 @@ namespace ManagerCafe.Contracts.Services
             return _mapper.Map<List<InventoryTransaction>, List<InventoryTransactionDto>>(entites);
         }
 
-        public async Task<CommonPageDto<InventoryTransactionDto>> GetPagedStatisticListAsync(FilterInventoryTransactionDto item, int enums)
+        public async Task<CommonPageDto<InventoryTransactionDto>> GetPagedStatisticListAsync(FilterInventoryTransactionDto item)
         {
-            if (Enum.IsDefined(typeof(EnumInventoryTransactionFilter), enums))
+            if (Enum.IsDefined(typeof(EnumInventoryTransactionFilter), item.Choice))
             {
-                var queryBuilder = await FilterQueryStatisticAbleAsync(item);
+                //var query = 
+                var queryBuilder = await FilterPageAsync(item);
                 var totalCount = await queryBuilder.CountAsync();
 
-                switch ((EnumInventoryTransactionFilter)enums)
+                switch ((EnumInventoryTransactionFilter)item.Choice)
                 {
                     case EnumInventoryTransactionFilter.DateAsc:
                         {
@@ -103,25 +123,28 @@ namespace ManagerCafe.Contracts.Services
         public async Task<List<InventoryTransactionDto>> FilterStatisticFindAsync(FilterInventoryTransactionDto item)
         {
             var query = await _inventoryTransactionRepository.GetQueryableAsync();
-            var toDate = item.ToDate.AddDays(1).AddSeconds(-1);
             var filter = query
                 .Include(x => x.Inventory)
                 .ThenInclude(k => k.WareHouse)
                 .Include(x => x.Inventory)
                 .ThenInclude(k => k.Product)
-                .Where(x => x.Inventory.CreateTime >= item.FromDate && x.Inventory.CreateTime <= toDate
-                && x.Inventory.ProductId == item.ProductId && x.Inventory.WareHouseId == item.WarehouseId
+                .Where(x => x.Inventory.ProductId == item.ProductId && x.Inventory.WareHouseId == item.WarehouseId
                 && x.Type == item.Type);
+            if (item.FromDate.HasValue && item.ToDate.HasValue)
+            {
+                var toDate = item.ToDate?.AddDays(1).AddSeconds(-1);
+                query = query.Where(x => x.Inventory.CreateTime >= item.FromDate && x.Inventory.CreateTime <= item.FromDate);
+            }
             return _mapper.Map<List<InventoryTransaction>, List<InventoryTransactionDto>>(await filter.ToListAsync());
         }
 
-        public async Task<CommonPageDto<InventoryTransactionDto>> GetPagedHistoryListAsync(FilterInventoryTransactionDto item, int choice)
+        public async Task<CommonPageDto<InventoryTransactionDto>> GetPagedHistoryListAsync(FilterInventoryTransactionDto item)
         {
-            if (Enum.IsDefined(typeof(EnumInventoryTransactionFilter), choice))
+            if (Enum.IsDefined(typeof(EnumInventoryTransactionFilter), item.Choice))
             {
                 var query = await FilterQueryAbleHistoryAsync(item);
                 var count = query.CountAsync();
-                switch ((EnumInventoryTransactionFilter)choice)
+                switch ((EnumInventoryTransactionFilter)item.Choice)
                 {
                     case EnumInventoryTransactionFilter.DateAsc:
                         query = query.OrderBy(x => x.CreateTime);
@@ -155,7 +178,7 @@ namespace ManagerCafe.Contracts.Services
 
         public async Task<List<InventoryTransactionDto>> FilterHistoryFindAsync(FilterInventoryTransactionDto item)
         {
-            var toDate = item.ToDate.AddDays(1).AddSeconds(-1);
+            var toDate = item.ToDate?.AddDays(1).AddSeconds(-1);
             var query = await _inventoryTransactionRepository.GetQueryableAsync();
             var filter = query
                 .Include(x => x.Inventory)
