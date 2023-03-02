@@ -81,19 +81,6 @@ namespace ManagerCafe.Applications.Service
                 filters = filters.Where(x =>
                     EF.Functions.Like(x.Name, $"{item.Name}%"));
             }
-
-            //if (item.PriceBuy > 0)
-            //{
-            //    filters = filters.Where(x => x.PriceBuy == item.PriceBuy);
-            //}
-
-            //if (item.PriceSell > 0)
-            //{
-            //    filters = filters.Where(x => x.PriceSell == item.PriceSell);
-            //}
-
-            // Hướng vẫn cách xem query
-            //var query = filters.ToQueryString();
             return _mapper.Map<List<Product>, List<ProductDto>>(await filters.ToListAsync());
         }
 
