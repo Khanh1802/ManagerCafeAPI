@@ -1,6 +1,6 @@
 ﻿using ManagerCafe.Data.Enums;
 
-namespace ManagerCafe.CacheItems.Orders
+namespace ManagerCafe.Share.CacheItems.Orders
 {
     public class OrderCacheItem
     {

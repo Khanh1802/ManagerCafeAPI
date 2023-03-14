@@ -1,4 +1,4 @@
-namespace WebApplicationManagerCafe
+namespace ManagerCafeAPI
 {
     public class WeatherForecast
     {

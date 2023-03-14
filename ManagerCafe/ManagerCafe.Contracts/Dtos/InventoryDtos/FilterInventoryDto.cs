@@ -1,4 +1,4 @@
-﻿using ManagerCafe.Commons;
+﻿using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Contracts.Dtos.InventoryDtos
 {

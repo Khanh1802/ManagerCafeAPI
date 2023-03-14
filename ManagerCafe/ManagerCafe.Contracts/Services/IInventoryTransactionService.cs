@@ -1,5 +1,5 @@
-﻿using ManagerCafe.Commons;
-using ManagerCafe.Contracts.Dtos.InventoryTransactionDtos;
+﻿using ManagerCafe.Contracts.Dtos.InventoryTransactionDtos;
+using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Contracts.Services
 {

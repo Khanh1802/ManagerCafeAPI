@@ -1,5 +1,5 @@
-﻿using ManagerCafe.Commons;
-using ManagerCafe.Contracts.Dtos.WareHouseDtos;
+﻿using ManagerCafe.Contracts.Dtos.WareHouseDtos;
+using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Contracts.Services
 {

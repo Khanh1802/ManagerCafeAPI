@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace ManagerCafe.Data.Configurations
 {
-    public class InvetoryEntityTypeConfiguration : IEntityTypeConfiguration<Inventory>
+    public class InventoryEntityTypeConfiguration : IEntityTypeConfiguration<Inventory>
     {
         public void Configure(EntityTypeBuilder<Inventory> builder)
         {

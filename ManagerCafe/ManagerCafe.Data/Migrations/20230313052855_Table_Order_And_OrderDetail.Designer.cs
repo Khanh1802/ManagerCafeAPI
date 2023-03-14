@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ManagerCafe.Data.Migrations
 {
     [DbContext(typeof(ManagerCafeDbContext))]
-    [Migration("20230130122535_update_Table_Order")]
-    partial class update_Table_Order
+    [Migration("20230313052855_Table_Order_And_OrderDetail")]
+    partial class Table_Order_And_OrderDetail
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -104,11 +104,13 @@ namespace ManagerCafe.Data.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("CustomerId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<DateTime?>("DeletetionTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<bool>("HasPayment")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bit")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsDeleted")
                         .ValueGeneratedOnAdd()
@@ -118,23 +120,32 @@ namespace ManagerCafe.Data.Migrations
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<Guid>("StaffId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
+
+                    b.Property<string>("StripeOrderId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("TotalBill")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Url")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Code");
 
-                    b.HasIndex("CustomerId");
+                    b.HasIndex("Id");
 
-                    b.HasIndex("StaffId");
+                    b.HasIndex("StripeOrderId");
+
+                    b.HasIndex("Url");
 
                     b.ToTable("Order", (string)null);
                 });
@@ -174,28 +185,29 @@ namespace ManagerCafe.Data.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
 
-                    b.Property<int>("Quaity")
+                    b.Property<int>("Quantity")
                         .HasColumnType("int");
+
+                    b.Property<string>("StripePriceId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("StripeProductId")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<decimal>("TotalPrice")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<Guid>("WareHouseId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("WarehouseName")
-                        .IsRequired()
-                        .HasMaxLength(300)
-                        .HasColumnType("nvarchar(300)");
-
                     b.HasKey("Id");
 
                     b.HasIndex("OrderId");
 
-                    b.HasIndex("ProductId");
-
-                    b.HasIndex("WareHouseId");
+                    b.HasIndex("ProductId")
+                        .IsUnique();
 
                     b.ToTable("OrderDetail", (string)null);
                 });
@@ -232,6 +244,12 @@ namespace ManagerCafe.Data.Migrations
                     b.Property<decimal>("PriceSell")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("StripePriceId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("StripeProductId")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -408,48 +426,21 @@ namespace ManagerCafe.Data.Migrations
                     b.Navigation("Inventory");
                 });
 
-            modelBuilder.Entity("ManagerCafe.Data.Models.Order", b =>
-                {
-                    b.HasOne("ManagerCafe.Data.Models.User", "Customer")
-                        .WithMany()
-                        .HasForeignKey("CustomerId")
-                        .IsRequired();
-
-                    b.HasOne("ManagerCafe.Data.Models.User", "Staff")
-                        .WithMany()
-                        .HasForeignKey("StaffId")
-                        .IsRequired();
-
-                    b.Navigation("Customer");
-
-                    b.Navigation("Staff");
-                });
-
             modelBuilder.Entity("ManagerCafe.Data.Models.OrderDetail", b =>
                 {
-                    b.HasOne("ManagerCafe.Data.Models.Order", "Order")
+                    b.HasOne("ManagerCafe.Data.Models.Order", null)
                         .WithMany("OrderDetails")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("ManagerCafe.Data.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId")
+                        .WithOne("OrderDetail")
+                        .HasForeignKey("ManagerCafe.Data.Models.OrderDetail", "ProductId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("ManagerCafe.Data.Models.WareHouse", "WareHouse")
-                        .WithMany()
-                        .HasForeignKey("WareHouseId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Order");
 
                     b.Navigation("Product");
-
-                    b.Navigation("WareHouse");
                 });
 
             modelBuilder.Entity("ManagerCafe.Data.Models.User", b =>
@@ -476,6 +467,8 @@ namespace ManagerCafe.Data.Migrations
             modelBuilder.Entity("ManagerCafe.Data.Models.Product", b =>
                 {
                     b.Navigation("Invetories");
+
+                    b.Navigation("OrderDetail");
                 });
 
             modelBuilder.Entity("ManagerCafe.Data.Models.UserType", b =>

@@ -1,4 +1,4 @@
-﻿using ManagerCafe.CacheItems.Users;
+﻿using ManagerCafe.Share.CacheItems.Users;
 
 namespace ManagerCafe.Contracts.Services
 {

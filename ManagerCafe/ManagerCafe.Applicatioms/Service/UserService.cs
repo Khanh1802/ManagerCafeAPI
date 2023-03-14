@@ -1,6 +1,4 @@
 ﻿using AutoMapper;
-using ManagerCafe.CacheItems.Users;
-using ManagerCafe.Commons;
 using ManagerCafe.Contracts.Dtos.UsersDtos;
 using ManagerCafe.Contracts.Dtos.UsersDtos.ValidateUserDto;
 using ManagerCafe.Contracts.Services;
@@ -9,6 +7,8 @@ using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel;
+using ManagerCafe.Share.CacheItems.Users;
+using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Applications.Service
 {

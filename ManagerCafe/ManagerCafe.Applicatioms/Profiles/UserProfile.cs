@@ -1,7 +1,7 @@
 ﻿using AutoMapper;
-using ManagerCafe.CacheItems.Users;
 using ManagerCafe.Contracts.Dtos.UsersDtos;
 using ManagerCafe.Data.Models;
+using ManagerCafe.Share.CacheItems.Users;
 
 namespace ManagerCafe.Applications.Profiles
 {

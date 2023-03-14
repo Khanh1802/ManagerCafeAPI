@@ -1,5 +1,4 @@
-﻿using ManagerCafe.CacheItems.OrderDetails;
-using ManagerCafe.Contracts.Services;
+﻿using ManagerCafe.Contracts.Services;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace ManagerCafe.Applications.Service
@@ -14,14 +13,14 @@ namespace ManagerCafe.Applications.Service
             _memoryCache = memoryCache;
         }
 
-        public OrderDetailCacheItem GetOrder()
-        {
-            return _memoryCache.Get<OrderDetailCacheItem>(CacheOrder);
-        }
+        //public OrderDetailCacheItem GetOrder()
+        //{
+        //    return _memoryCache.Get<OrderDetailCacheItem>(CacheOrder);
+        //}
 
-        public void SetOrder(OrderDetailCacheItem orderDetailCacheItem)
-        {
-            _memoryCache.Set(CacheOrder, orderDetailCacheItem);
-        }
+        //public void SetOrder(OrderDetailCacheItem orderDetailCacheItem)
+        //{
+        //    _memoryCache.Set(CacheOrder, orderDetailCacheItem);
+        //}
     }
 }

@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
-using ManagerCafe.Commons;
 using ManagerCafe.Contracts.Dtos.InventoryTransactionDtos;
+using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Commons;
 using Microsoft.EntityFrameworkCore;
 
-namespace ManagerCafe.Contracts.Services
+namespace ManagerCafe.Applications.Service
 {
     public class InventoryTransactionService : IInventoryTransactionService
     {

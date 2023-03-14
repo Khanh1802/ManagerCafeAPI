@@ -1,6 +1,4 @@
-﻿using ManagerCafe.Commons;
-
-namespace ManagerCafe.Contracts.Services
+﻿namespace ManagerCafe.Contracts.Services
 {
     public interface IGenericService<TEntityDto, in TCreateDto, in UpdateDto, in FilterDto, in TKey>
         where TEntityDto : class
