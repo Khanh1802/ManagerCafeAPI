@@ -14,7 +14,7 @@ namespace ManagerCafe.Data.Models
         //public Guid CustomerId { get; set; }
         public decimal TotalBill { get; set; }
         public string Code { get; set; }
-        public EnumOrderStatus Status { get; set; }
+        public EnumOrderDelivery Status { get; set; }
         public DateTime CreateTime { get; set; }
         public DateTime? DeletetionTime { get; set; }
         public DateTime? LastModificationTime { get; set; }

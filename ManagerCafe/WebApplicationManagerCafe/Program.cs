@@ -8,6 +8,7 @@ using ManagerCafeAPI.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using StackExchange.Redis;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -109,12 +110,18 @@ builder.Services.AddTransient<IUserCacheService, UserCacheService>();
 builder.Services.AddTransient<IOrderCacheService, OrderCacheService>();
 builder.Services.AddTransient<IOrderDetailCacheService, OrderDetailCacheService>();
 builder.Services.AddTransient<IOrderDetailService, OrderDetailService>();
+builder.Services.AddTransient<ICartService, CartService>();
 builder.Services.AddAutoMapper(typeof(ProductProfile));
 builder.Services.AddAutoMapper(typeof(WareHouseProfile));
 builder.Services.AddAutoMapper(typeof(InventoryProfile));
 builder.Services.AddAutoMapper(typeof(InventoryTransactionProfile));
 builder.Services.AddAutoMapper(typeof(UserTypeProfile));
+builder.Services.AddAutoMapper(typeof(CartProfile));
 builder.Services.AddMemoryCache();
+IConnectionMultiplexer multiplexer = ConnectionMultiplexer.Connect(configuration["Redis:Configuration"]);
+builder.Services.AddSingleton(multiplexer);
+builder.Services.AddTransient(cfg => multiplexer.GetDatabase());
+
 
 var app = builder.Build();
 
