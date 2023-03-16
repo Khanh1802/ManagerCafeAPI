@@ -65,7 +65,29 @@ namespace ManagerCafeAPI.Controllers
             try
             {
                 await _cartService.UpdateCartAsync(item);
-                return StatusCode(StatusCodes.Status204NoContent,new
+                return StatusCode(StatusCodes.Status204NoContent, new
+                {
+                    IsSuccess = true,
+                    Message = "Update success"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = "Serve error " + ex.Message
+                });
+            }
+        }
+
+        [HttpDelete("{phone}")]
+        public async Task<IActionResult> DeleteAsync(string phone)
+        {
+            try
+            {
+                await _cartService.DeleteCartAsync(phone);
+                return StatusCode(StatusCodes.Status200OK, new
                 {
                     IsSuccess = true,
                     Message = "Deleted success"

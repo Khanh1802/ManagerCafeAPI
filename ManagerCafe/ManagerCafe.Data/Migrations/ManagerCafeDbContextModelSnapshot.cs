@@ -105,6 +105,9 @@ namespace ManagerCafe.Data.Migrations
                     b.Property<DateTime?>("DeletetionTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("Delivery")
+                        .HasColumnType("int");
+
                     b.Property<bool>("HasPayment")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("bit")
@@ -118,11 +121,7 @@ namespace ManagerCafe.Data.Migrations
                     b.Property<DateTime?>("LastModificationTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
                     b.Property<string>("StripeOrderId")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -131,7 +130,6 @@ namespace ManagerCafe.Data.Migrations
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Url")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -187,12 +185,10 @@ namespace ManagerCafe.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("StripePriceId")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("StripeProductId")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 

@@ -94,7 +94,7 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public async Task UpdateCartAsync(UpdateCartDto item)
+        public async Task<ShoppingCartDto> UpdateCartAsync(UpdateCartDto item)
         {
             var cacheItem = new RedisKey($"Cart:{item.Phone}");
             var cart = await _redis.StringGetAsync(cacheItem);
@@ -108,6 +108,18 @@ namespace ManagerCafe.Applications.Service
                     var result = new RedisValue(JsonConvert.SerializeObject(shoppingCart));
                     await _redis.StringSetAsync(cacheItem, result);
                 }
+                return shoppingCart;
+            }
+            return new ShoppingCartDto();
+        }
+
+        public async Task DeleteCartAsync(string phone)
+        {
+            var cacheItem = new RedisKey($"Cart:{phone}");
+            var cart = await _redis.StringGetAsync(cacheItem);
+            if (cart.HasValue)
+            {
+                await _redis.StringGetDeleteAsync(cacheItem);
             }
         }
     }

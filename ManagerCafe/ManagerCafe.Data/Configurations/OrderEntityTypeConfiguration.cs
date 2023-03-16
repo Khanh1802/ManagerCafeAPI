@@ -13,8 +13,8 @@ namespace ManagerCafe.Data.Configurations
             builder.Property(x => x.CreateTime).IsRequired().ValueGeneratedOnAdd();
             builder.Property(x => x.TotalBill).IsRequired().HasPrecision(18, 2);
             builder.Property(x => x.IsDeleted).HasDefaultValue(false);
-            builder.Property(x => x.Url).IsRequired().HasMaxLength(200);
-            builder.Property(x => x.StripeOrderId).IsRequired().HasMaxLength(100);
+            builder.Property(x => x.Url).HasMaxLength(200);
+            builder.Property(x => x.StripeOrderId).HasMaxLength(100);
             builder.Property(x => x.HasPayment).HasDefaultValue(false);
             //builder.HasOne(x => x.Staff).WithMany().HasForeignKey(x => x.StaffId).OnDelete(DeleteBehavior.ClientSetNull);
             //builder.HasOne(x => x.Customer).WithMany().HasForeignKey(x => x.CustomerId).OnDelete(DeleteBehavior.ClientSetNull);

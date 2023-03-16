@@ -28,13 +28,13 @@ namespace ManagerCafe.Data.Migrations
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TotalBill = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Code = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
+                    Delivery = table.Column<int>(type: "int", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DeletetionTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    Url = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    StripeOrderId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Url = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    StripeOrderId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
                     HasPayment = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
@@ -57,8 +57,8 @@ namespace ManagerCafe.Data.Migrations
                     DeletetionTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
-                    StripePriceId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    StripeProductId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                    StripePriceId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    StripeProductId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true)
                 },
                 constraints: table =>
                 {

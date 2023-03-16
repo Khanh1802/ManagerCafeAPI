@@ -6,6 +6,7 @@ namespace ManagerCafe.Contracts.Services
     {
         Task<ShoppingCartDto> GetCart(string id);
         Task<ShoppingCartDto> CreateCartAsync(CreateShoppingDto item);
-        Task UpdateCartAsync(UpdateCartDto item);
+        Task<ShoppingCartDto> UpdateCartAsync(UpdateCartDto item);
+        Task DeleteCartAsync(string phone);
     }
 }
