@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using ManagerCafe.Commons;
 using ManagerCafe.Contracts.Dtos.WareHouseDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
@@ -9,6 +8,7 @@ using ManagerCafe.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Data;
+using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Applications.Service
 {

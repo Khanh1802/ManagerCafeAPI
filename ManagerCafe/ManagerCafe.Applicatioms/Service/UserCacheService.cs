@@ -1,5 +1,5 @@
-﻿using ManagerCafe.CacheItems.Users;
-using ManagerCafe.Contracts.Services;
+﻿using ManagerCafe.Contracts.Services;
+using ManagerCafe.Share.CacheItems.Users;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace ManagerCafe.Applications.Service

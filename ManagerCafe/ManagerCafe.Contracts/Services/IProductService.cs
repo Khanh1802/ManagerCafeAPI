@@ -1,6 +1,6 @@
-﻿using ManagerCafe.Commons;
-using ManagerCafe.Contracts.Dtos.Orders;
+﻿using ManagerCafe.Contracts.Dtos.Orders;
 using ManagerCafe.Contracts.Dtos.ProductDtos;
+using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Contracts.Services
 {

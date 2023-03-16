@@ -31,13 +31,25 @@ namespace ManagerCafe.Data.Data
             base.OnModelCreating(modelBuilder);
 
             new ProductEntityTypeConfigurations().Configure(modelBuilder.Entity<Product>());
-            new InvetoryEntityTypeConfiguration().Configure(modelBuilder.Entity<Inventory>());
+            new InventoryEntityTypeConfiguration().Configure(modelBuilder.Entity<Inventory>());
             new WareHouseEntityTypeConfiguration().Configure(modelBuilder.Entity<WareHouse>());
             new InventoryTransactionEntityTypeConfiguration().Configure(modelBuilder.Entity<InventoryTransaction>());
             new UserTypeEntityTypeConfiguration().Configure(modelBuilder.Entity<UserType>());
             new UserEntityTypeConfiguration().Configure(modelBuilder.Entity<User>());
             new OrderEntityTypeConfiguration().Configure(modelBuilder.Entity<Order>());
             new OrderDetailEntityTypeConfiguration().Configure(modelBuilder.Entity<OrderDetail>());
+
+
+            modelBuilder.Entity<Order>()
+                .HasMany(x => x.OrderDetails)
+                .WithOne()
+                .HasForeignKey(x => x.OrderId);
+
+            modelBuilder.Entity<Product>()
+                .HasOne<OrderDetail>(x => x.OrderDetail)
+                .WithOne(x => x.Product)
+                .HasForeignKey<OrderDetail>(x => x.ProductId);
+
         }
         //public override void Dispose()
         //{

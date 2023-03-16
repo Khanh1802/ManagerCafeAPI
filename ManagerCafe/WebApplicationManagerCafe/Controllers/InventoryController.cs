@@ -18,7 +18,7 @@ namespace ManagerCafeAPI.Controllers
         {
             _inventoryService = inventoryService;
         }
-        [HttpPost("GetAllStatistics")]
+        [HttpPost("GetAll")]
         public async Task<IActionResult> GetAllAsync([FromBody]FilterInventoryDto filter)
         {
             try

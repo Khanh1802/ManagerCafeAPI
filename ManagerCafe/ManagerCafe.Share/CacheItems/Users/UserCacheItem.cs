@@ -1,4 +1,4 @@
-﻿namespace ManagerCafe.CacheItems.Users
+﻿namespace ManagerCafe.Share.CacheItems.Users
 {
     public class UserCacheItem
     {

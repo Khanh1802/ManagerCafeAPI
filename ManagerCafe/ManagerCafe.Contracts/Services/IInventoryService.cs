@@ -1,6 +1,5 @@
-﻿using ManagerCafe.CacheItems.OrderDetails;
-using ManagerCafe.Commons;
-using ManagerCafe.Contracts.Dtos.InventoryDtos;
+﻿using ManagerCafe.Contracts.Dtos.InventoryDtos;
+using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Contracts.Services
 {
@@ -10,6 +9,6 @@ namespace ManagerCafe.Contracts.Services
         Task<List<InventoryDto>> FindByIdProductAndWarehouse(FilterInventoryDto item);
         Task<InventoryOrderDetail> GetInventoryOrderDetail(Guid productId);
 
-        Task LogicProcessing(List<OrderDetailCacheItem> orderDetailCacheItems);
+        //Task LogicProcessing(List<OrderDetailCacheItem> orderDetailCacheItems);
     }
 }

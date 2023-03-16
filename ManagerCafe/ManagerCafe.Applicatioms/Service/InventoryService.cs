@@ -1,19 +1,19 @@
 ﻿using AutoMapper;
-using ManagerCafe.CacheItems.OrderDetails;
-using ManagerCafe.Commons;
 using ManagerCafe.Contracts.Dtos.InventoryDtos;
 using ManagerCafe.Contracts.Dtos.InventoryTransactionDtos;
 using ManagerCafe.Contracts.Dtos.OrderDetails;
 using ManagerCafe.Contracts.Dtos.WareHouseDtos;
+using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Commons;
 using ManagerCafe.Share.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace ManagerCafe.Contracts.Services
+namespace ManagerCafe.Applications.Service
 {
     public class InventoryService : IInventoryService
     {
@@ -260,15 +260,15 @@ namespace ManagerCafe.Contracts.Services
             return await inventoryOrderDetails.FirstOrDefaultAsync();
         }
 
-        public async Task LogicProcessing(List<OrderDetailCacheItem> orderDetailCacheItems)
-        {
-            var orderDetails = _mapper.Map<List<OrderDetailCacheItem>, List<OrderDetailDto>>(orderDetailCacheItems);
+        //public async Task LogicProcessing(List<OrderDetailCacheItem> orderDetailCacheItems)
+        //{
+        //    var orderDetails = _mapper.Map<List<OrderDetailCacheItem>, List<OrderDetailDto>>(orderDetailCacheItems);
 
-            var queryInventory = await _inventoryRepository.GetQueryableAsync();
-            orderDetails = orderDetails
-                .Where(x => queryInventory.Select(k => k.ProductId).Contains(x.ProductId))
-                .ToList();
-        }
+        //    var queryInventory = await _inventoryRepository.GetQueryableAsync();
+        //    orderDetails = orderDetails
+        //        .Where(x => queryInventory.Select(k => k.ProductId).Contains(x.ProductId))
+        //        .ToList();
+        //}
 
         public Task<List<InventoryDto>> FilterAsync(FilterInventoryDto item)
         {

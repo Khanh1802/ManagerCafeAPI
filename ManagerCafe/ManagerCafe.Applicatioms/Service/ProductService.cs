@@ -1,6 +1,5 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using ManagerCafe.Commons;
 using ManagerCafe.Contracts.Dtos.Orders;
 using ManagerCafe.Contracts.Dtos.ProductDtos;
 using ManagerCafe.Contracts.Services;
@@ -8,6 +7,7 @@ using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Commons;
 using ManagerCafe.Share.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -93,15 +93,15 @@ namespace ManagerCafe.Applications.Service
                 return _mapper.Map<List<Product>, List<ProductDto>>(products);
             }
 
-            var entites = await _productRepository.GetAllAsync();
+            var allAsync = await _productRepository.GetAllAsync();
 
             //Set lại cache với thời gian hết hạn bắt đầu từ bây giờ 2m
             // NOTE: Khi add và update nên dùng remove theo Key để build lại cache 
-            _memoryCache.Set<List<Product>>(ProductCacheKey.ProductAllKey, entites, new MemoryCacheEntryOptions
+            _memoryCache.Set<List<Product>>(ProductCacheKey.ProductAllKey, allAsync, new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2)
             });
-            return _mapper.Map<List<Product>, List<ProductDto>>(entites);
+            return _mapper.Map<List<Product>, List<ProductDto>>(allAsync);
         }
 
         public async Task<ProductDto> GetByIdAsync(Guid key)
@@ -110,7 +110,6 @@ namespace ManagerCafe.Applications.Service
             {
                 return _mapper.Map<Product, ProductDto>(product);
             }
-
             var entity = await _productRepository.GetByIdAsync(key);
             if (!entity.IsDeleted)
             {
@@ -151,11 +150,11 @@ namespace ManagerCafe.Applications.Service
         {
             var query = await _productRepository.GetQueryableAsync();
             var filter = query.Where(x => !x.IsDeleted);
-            if (item.Id.HasValue && string.IsNullOrEmpty(item.Name))
+            if (item.Id.HasValue)
             {
                 filter = filter.Where(x => x.Id == item.Id);
             }
-            if (!string.IsNullOrEmpty(item.Name) && item.Id.HasValue)
+            if (!string.IsNullOrEmpty(item.Name))
             {
                 filter = filter.Where(x => EF.Functions.Like(x.Name, $"%{item.Name.Trim()}%"));
             }

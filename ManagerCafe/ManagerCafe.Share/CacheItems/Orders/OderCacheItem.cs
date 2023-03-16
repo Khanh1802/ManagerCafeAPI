@@ -1,6 +1,6 @@
 ﻿using ManagerCafe.Data.Enums;
 
-namespace ManagerCafe.CacheItems.Orders
+namespace ManagerCafe.Share.CacheItems.Orders
 {
     public class OrderCacheItem
     {
@@ -8,6 +8,6 @@ namespace ManagerCafe.CacheItems.Orders
         public Guid CustomerId { get; set; }
         public decimal TotalBill { get; set; }
         public string Code { get; set; }
-        public EnumOrderStatus Status { get; set; }
+        public EnumOrderDelivery Status { get; set; }
     }
 }

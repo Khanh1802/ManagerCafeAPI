@@ -14,10 +14,13 @@ namespace ManagerCafe.Data.Models
         public string Code { get; set; }
         public decimal PriceBuy { get; set; }
         public decimal PriceSell { get; set; }
-        public DateTime CreateTime { get; set; } 
+        public DateTime CreateTime { get; set; }
         public DateTime? DeletetionTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
         public bool IsDeleted { get; set; }
         public List<Inventory> Invetories { get; set; }
+        public string StripeProductId { get; set; }
+        public string StripePriceId { get; set; }
+        public OrderDetail OrderDetail { get; set; }
     }
 }

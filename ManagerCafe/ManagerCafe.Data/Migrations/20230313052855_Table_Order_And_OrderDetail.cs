@@ -5,37 +5,41 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace ManagerCafe.Data.Migrations
 {
-    public partial class Table_Order : Migration
+    public partial class Table_Order_And_OrderDetail : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.AddColumn<string>(
+                name: "StripePriceId",
+                table: "Product",
+                type: "nvarchar(max)",
+                nullable: true);
+
+            migrationBuilder.AddColumn<string>(
+                name: "StripeProductId",
+                table: "Product",
+                type: "nvarchar(max)",
+                nullable: true);
+
             migrationBuilder.CreateTable(
                 name: "Order",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    StaffId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    CustomerId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     TotalBill = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Code = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
+                    Status = table.Column<int>(type: "int", nullable: false),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DeletetionTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    Url = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    StripeOrderId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    HasPayment = table.Column<bool>(type: "bit", nullable: false, defaultValue: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Order", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Order_User_CustomerId",
-                        column: x => x.CustomerId,
-                        principalTable: "User",
-                        principalColumn: "Id");
-                    table.ForeignKey(
-                        name: "FK_Order_User_StaffId",
-                        column: x => x.StaffId,
-                        principalTable: "User",
-                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -43,18 +47,18 @@ namespace ManagerCafe.Data.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    WareHouseId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     OrderId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    ProductId = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     ProductName = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    WarehouseName = table.Column<string>(type: "nvarchar(300)", maxLength: 300, nullable: false),
-                    Quaity = table.Column<int>(type: "int", nullable: false),
+                    Quantity = table.Column<int>(type: "int", nullable: false),
                     TotalPrice = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     CreateTime = table.Column<DateTime>(type: "datetime2", nullable: false),
                     DeletetionTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     LastModificationTime = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false)
+                    IsDeleted = table.Column<bool>(type: "bit", nullable: false, defaultValue: false),
+                    StripePriceId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    StripeProductId = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
                 },
                 constraints: table =>
                 {
@@ -71,12 +75,6 @@ namespace ManagerCafe.Data.Migrations
                         principalTable: "Product",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_OrderDetail_WareHouse_WareHouseId",
-                        column: x => x.WareHouseId,
-                        principalTable: "WareHouse",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
@@ -85,14 +83,19 @@ namespace ManagerCafe.Data.Migrations
                 column: "Code");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_CustomerId",
+                name: "IX_Order_Id",
                 table: "Order",
-                column: "CustomerId");
+                column: "Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Order_StaffId",
+                name: "IX_Order_StripeOrderId",
                 table: "Order",
-                column: "StaffId");
+                column: "StripeOrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Order_Url",
+                table: "Order",
+                column: "Url");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderDetail_OrderId",
@@ -102,12 +105,8 @@ namespace ManagerCafe.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_OrderDetail_ProductId",
                 table: "OrderDetail",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_OrderDetail_WareHouseId",
-                table: "OrderDetail",
-                column: "WareHouseId");
+                column: "ProductId",
+                unique: true);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -117,6 +116,14 @@ namespace ManagerCafe.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "Order");
+
+            migrationBuilder.DropColumn(
+                name: "StripePriceId",
+                table: "Product");
+
+            migrationBuilder.DropColumn(
+                name: "StripeProductId",
+                table: "Product");
         }
     }
 }

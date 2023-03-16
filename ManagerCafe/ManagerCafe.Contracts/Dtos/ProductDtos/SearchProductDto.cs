@@ -1,4 +1,4 @@
-﻿namespace ManagerCafe.Contracts.Dtos.Orders
+﻿namespace ManagerCafe.Contracts.Dtos.ProductDtos
 {
     public class SearchProductDto
     {

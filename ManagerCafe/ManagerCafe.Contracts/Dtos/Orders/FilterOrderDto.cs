@@ -6,6 +6,6 @@ namespace ManagerCafe.Contracts.Dtos.Orders
     {
         public Guid Id { get; set; }
         public string Code { get; set; }
-        public EnumOrderStatus Status { get; set; }
+        public EnumOrderDelivery Status { get; set; }
     }
 }

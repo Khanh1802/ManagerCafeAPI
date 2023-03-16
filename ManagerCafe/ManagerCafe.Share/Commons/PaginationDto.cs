@@ -1,4 +1,4 @@
-﻿namespace ManagerCafe.Commons
+﻿namespace ManagerCafe.Share.Commons
 {
     public class PaginationDto
     {

@@ -6,6 +6,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Dtos\CartDtos\UpdateCartDto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ManagerCafe.Data\ManagerCafe.Data.csproj" />
     <ProjectReference Include="..\ManagerCafe.Domain\ManagerCafe.Domain.csproj" />
     <ProjectReference Include="..\ManagerCafe.Share\ManagerCafe.Share.csproj" />

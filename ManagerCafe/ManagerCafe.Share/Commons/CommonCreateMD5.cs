@@ -1,7 +1,7 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
 
-namespace ManagerCafe.Commons
+namespace ManagerCafe.Share.Commons
 {
     public static class CommonCreateMD5
     {

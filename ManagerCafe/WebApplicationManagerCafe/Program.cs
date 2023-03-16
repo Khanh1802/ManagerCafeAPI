@@ -8,7 +8,7 @@ using ManagerCafeAPI.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using StackExchange.Redis;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -20,35 +20,37 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
-    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
-    {
-        Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 
-                      Enter 'Bearer' [space] and then your token in the text input below.
-                      \r\n\r\nExample: 'Bearer 12345abcdef'",
-        Name = "Authorization",
-        In = ParameterLocation.Header,
-        Type = SecuritySchemeType.ApiKey,
-        Scheme = "Bearer"
-    });
+    #region Authendication
+    //options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    //{
+    //    Description = @"JWT Authorization header using the Bearer scheme. \r\n\r\n 
+    //                  Enter 'Bearer' [space] and then your token in the text input below.
+    //                  \r\n\r\nExample: 'Bearer 12345abcdef'",
+    //    Name = "Authorization",
+    //    In = ParameterLocation.Header,
+    //    Type = SecuritySchemeType.ApiKey,
+    //    Scheme = "Bearer"
+    //});
 
-    options.AddSecurityRequirement(new OpenApiSecurityRequirement()
-      {
-        {
-          new OpenApiSecurityScheme
-          {
-            Reference = new OpenApiReference
-              {
-                Type = ReferenceType.SecurityScheme,
-                Id = "Bearer"
-              },
-              Scheme = "oauth2",
-              Name = "Bearer",
-              In = ParameterLocation.Header,
+    //options.AddSecurityRequirement(new OpenApiSecurityRequirement()
+    //  {
+    //    {
+    //      new OpenApiSecurityScheme
+    //      {
+    //        Reference = new OpenApiReference
+    //          {
+    //            Type = ReferenceType.SecurityScheme,
+    //            Id = "Bearer"
+    //          },
+    //          Scheme = "oauth2",
+    //          Name = "Bearer",
+    //          In = ParameterLocation.Header,
 
-            },
-            new List<string>()
-          }
-        });
+    //        },
+    //        new List<string>()
+    //      }
+    //    });
+    #endregion
 });
 
 builder.Services.AddCors(option => option
@@ -59,7 +61,7 @@ builder.Services.AddCors(option => option
 
 var configuration = builder.Configuration;
 
-builder.Services.Configure<AuthenticationOption>(configuration.GetSection("Authentication"));
+builder.Services.Configure<AuthenticationOption>(builder.Configuration.GetSection("Authentication"));
 
 //C1:
 //var connectionString = builder.Configuration.GetConnectionString("ManagerCafe");
@@ -108,12 +110,18 @@ builder.Services.AddTransient<IUserCacheService, UserCacheService>();
 builder.Services.AddTransient<IOrderCacheService, OrderCacheService>();
 builder.Services.AddTransient<IOrderDetailCacheService, OrderDetailCacheService>();
 builder.Services.AddTransient<IOrderDetailService, OrderDetailService>();
+builder.Services.AddTransient<ICartService, CartService>();
 builder.Services.AddAutoMapper(typeof(ProductProfile));
 builder.Services.AddAutoMapper(typeof(WareHouseProfile));
 builder.Services.AddAutoMapper(typeof(InventoryProfile));
 builder.Services.AddAutoMapper(typeof(InventoryTransactionProfile));
 builder.Services.AddAutoMapper(typeof(UserTypeProfile));
+builder.Services.AddAutoMapper(typeof(CartProfile));
 builder.Services.AddMemoryCache();
+IConnectionMultiplexer multiplexer = ConnectionMultiplexer.Connect(configuration["Redis:Configuration"]);
+builder.Services.AddSingleton(multiplexer);
+builder.Services.AddTransient(cfg => multiplexer.GetDatabase());
+
 
 var app = builder.Build();
 
