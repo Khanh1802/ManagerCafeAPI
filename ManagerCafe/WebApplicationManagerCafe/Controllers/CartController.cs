@@ -16,7 +16,7 @@ namespace ManagerCafeAPI.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateCart([FromBody] CreateShoppingDto create)
+        public async Task<IActionResult> CreateCart([FromBody] CreateCartDto create)
         {
             try
             {

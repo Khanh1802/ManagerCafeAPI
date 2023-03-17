@@ -14,6 +14,7 @@ namespace ManagerCafe.Domain.Repositories
 
         public async Task<Order> AddAsync(Order entity)
         {
+            entity.CreateTime = DateTime.Now;
             await _context.Orders.AddAsync(entity);
             await _context.SaveChangesAsync();
             return entity;
@@ -42,6 +43,7 @@ namespace ManagerCafe.Domain.Repositories
 
         public async Task<Order> UpdateAsync(Order entity)
         {
+            entity.LastModificationTime = DateTime.Now;
             _context.Update(entity);
             await _context.SaveChangesAsync();
             return entity;

@@ -1,8 +1,8 @@
-﻿namespace ManagerCafe.Contracts.Dtos.OrderDetails
+﻿
+namespace ManagerCafe.Contracts.Dtos.OrderDetails
 {
-    public class OrderDetailDto
+    public class CreateOrderDetailDto
     {
-        public Guid OrderId { get; set; }
         public Guid ProductId { get; set; }
         public string ProductName { get; set; }
         public int Quantity { get; set; }

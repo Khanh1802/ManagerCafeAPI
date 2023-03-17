@@ -15,23 +15,23 @@ namespace ManagerCafe.Applications.Service
             _mapper = mapper;
         }
 
-        public async Task<ShoppingCartDto> GetCart(string id)
+        public async Task<CartDto> GetCart(string phone)
         {
-            if (string.IsNullOrEmpty(id))
+            if (string.IsNullOrEmpty(phone))
             {
-                return new ShoppingCartDto();
+                return new CartDto();
             }
-            var cacheItem = new RedisKey($"Cart:{id}");
+            var cacheItem = new RedisKey($"Cart:{phone}");
             var cart = await _redis.StringGetAsync(cacheItem);
             if (cart.HasValue)
             {
-                var shoppingCart = JsonConvert.DeserializeObject<ShoppingCartDto>(cart.ToString());
+                var shoppingCart = JsonConvert.DeserializeObject<CartDto>(cart.ToString());
                 return shoppingCart;
             }
-            return new ShoppingCartDto();
+            return new CartDto();
         }
 
-        public async Task<ShoppingCartDto> CreateCartAsync(CreateShoppingDto item)
+        public async Task<CartDto> CreateCartAsync(CreateCartDto item)
         {
             var notFound = false;
             // Create Key
@@ -39,78 +39,94 @@ namespace ManagerCafe.Applications.Service
             // Find Key
             var cart = await _redis.StringGetAsync(cacheItem);
             // CreateCartDto
-            var createCartDto = new CartDto()
+            var cartDetailDto = new CartDetailDto()
             {
                 ProductName = item.NameProduct,
                 Price = item.Price,
                 ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                TotalPrice = item.TotalPrice,
+                Quantity = item.Quantity
             };
             // Neu Key ko co thì tạo mới Key và Value
             if (!cart.HasValue)
             {
-                var shoppingDto = new ShoppingCartDto()
+                var cartDto = new CartDto()
                 {
-                    TotalBill = item.TotalBill,
                     Phone = item.Phone,
                     Delivery = item.Delivery,
                     Address = item.Address,
-                    NameUser = item.NameUser,
+                    CustomerName = item.CustomerName,
                 };
-                shoppingDto.Carts = new List<CartDto>();
-                shoppingDto.Carts.Add(createCartDto);
+                cartDto.Carts = new List<CartDetailDto>();
+                cartDetailDto.TotalPrice = cartDetailDto.Price * cartDetailDto.Quantity;
+                cartDto.Carts.Add(cartDetailDto);
+                // totalbill
+                cartDto.TotalBill = cartDetailDto.TotalPrice;
 
-                cart = new RedisValue(JsonConvert.SerializeObject(shoppingDto));
+                cart = new RedisValue(JsonConvert.SerializeObject(cartDto));
                 await _redis.StringSetAsync(cacheItem, cart);
                 //Convert lai thanh object
-                return JsonConvert.DeserializeObject<ShoppingCartDto>(cart.ToString());
+                return JsonConvert.DeserializeObject<CartDto>(cart.ToString());
             }
+
             else
             {
-                var shoppingDto = JsonConvert.DeserializeObject<ShoppingCartDto>(cart.ToString());
-                shoppingDto.Phone = item.Phone;
-                shoppingDto.TotalBill = item.TotalBill;
-                shoppingDto.Address = item.Address;
-                shoppingDto.NameUser = item.NameUser;
-                shoppingDto.Delivery = item.Delivery;
-                foreach (var cartItem in shoppingDto.Carts)
+                var cartDto = JsonConvert.DeserializeObject<CartDto>(cart.ToString());
+                cartDto.Phone = item.Phone;
+                cartDto.Address = item.Address;
+                cartDto.CustomerName = item.CustomerName;
+                cartDto.Delivery = item.Delivery;
+                cartDto.TotalBill = 0;
+
+                foreach (var cartDetailItem in cartDto.Carts)
                 {
-                    if (cartItem.ProductId == createCartDto.ProductId)
+                    if (cartDetailItem.ProductId == cartDetailDto.ProductId)
                     {
-                        cartItem.Quantity += createCartDto.Quantity;
-                        cartItem.TotalPrice += createCartDto.TotalPrice;
+                        cartDetailItem.Quantity += cartDetailDto.Quantity;
+                        cartDetailItem.TotalPrice = cartDetailItem.Price * cartDetailItem.Quantity;
                         notFound = true;
-                        break;
                     }
+                    else
+                    {
+                        cartDetailItem.TotalPrice = cartDetailItem.Price * cartDetailItem.Quantity;
+                    }
+                    cartDto.TotalBill += cartDetailItem.TotalPrice;
                 }
+
                 if (!notFound)
                 {
-                    shoppingDto.Carts.Add(createCartDto);
+                    cartDetailDto.TotalPrice = item.Price * item.Quantity;
+                    cartDto.Carts.Add(cartDetailDto);
+                    cartDto.TotalBill += cartDetailDto.TotalPrice;
                 }
-                cart = new RedisValue(JsonConvert.SerializeObject(shoppingDto));
+                cart = new RedisValue(JsonConvert.SerializeObject(cartDto));
                 await _redis.StringSetAsync(cacheItem, cart);
-                return JsonConvert.DeserializeObject<ShoppingCartDto>(cart.ToString());
+                return JsonConvert.DeserializeObject<CartDto>(cart.ToString());
             }
         }
 
-        public async Task<ShoppingCartDto> UpdateCartAsync(UpdateCartDto item)
+        public async Task<CartDto> UpdateCartAsync(UpdateCartDto item)
         {
             var cacheItem = new RedisKey($"Cart:{item.Phone}");
             var cart = await _redis.StringGetAsync(cacheItem);
             if (cart.HasValue)
             {
-                var shoppingCart = JsonConvert.DeserializeObject<ShoppingCartDto>(cart.ToString());
-                var remove = shoppingCart.Carts.FirstOrDefault(x => x.ProductId == item.ProductId);
+                var cartDto = JsonConvert.DeserializeObject<CartDto>(cart.ToString());
+                var remove = cartDto.Carts.FirstOrDefault(x => x.ProductId == item.ProductId);
                 if (remove != null)
                 {
-                    shoppingCart.Carts.Remove(remove);
-                    var result = new RedisValue(JsonConvert.SerializeObject(shoppingCart));
+                    cartDto.Carts.Remove(remove);
+                    cartDto.TotalBill = 0;
+                    foreach (var cartDetailItem in cartDto.Carts)
+                    {
+                        cartDto.TotalBill += cartDetailItem.TotalPrice;
+                    }
+
+                    var result = new RedisValue(JsonConvert.SerializeObject(cartDto));
                     await _redis.StringSetAsync(cacheItem, result);
                 }
-                return shoppingCart;
+                return cartDto;
             }
-            return new ShoppingCartDto();
+            return new CartDto();
         }
 
         public async Task DeleteCartAsync(string phone)

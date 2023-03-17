@@ -21,6 +21,5 @@ namespace ManagerCafe.Data.Models
         public List<Inventory> Invetories { get; set; }
         public string StripeProductId { get; set; }
         public string StripePriceId { get; set; }
-        public OrderDetail OrderDetail { get; set; }
     }
 }

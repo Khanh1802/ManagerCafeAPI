@@ -46,9 +46,9 @@ namespace ManagerCafe.Data.Data
                 .HasForeignKey(x => x.OrderId);
 
             modelBuilder.Entity<Product>()
-                .HasOne<OrderDetail>(x => x.OrderDetail)
+                .HasMany<OrderDetail>()
                 .WithOne(x => x.Product)
-                .HasForeignKey<OrderDetail>(x => x.ProductId);
+                .HasForeignKey(x => x.ProductId);
 
         }
         //public override void Dispose()

@@ -20,7 +20,5 @@ namespace ManagerCafe.Data.Models
         public DateTime? LastModificationTime { get; set; }
         public bool IsDeleted { get; set; }
         public Product Product { get; set; }
-        public string StripePriceId { get; set; }
-        public string StripeProductId { get; set; }
     }
 }

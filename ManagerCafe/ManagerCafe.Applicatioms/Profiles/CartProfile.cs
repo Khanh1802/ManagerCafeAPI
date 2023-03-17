@@ -7,7 +7,7 @@ namespace ManagerCafe.Applications.Profiles
     {
         public CartProfile()
         {
-            CreateMap<CreateCartDto, CartDto>();
+            CreateMap<CreateCartDto, CartDetailDto>();
         }
     }
 }

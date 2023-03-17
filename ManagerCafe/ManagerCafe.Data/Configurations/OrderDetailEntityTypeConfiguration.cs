@@ -14,8 +14,7 @@ namespace ManagerCafe.Data.Configurations
             builder.Property(x => x.Price).IsRequired().HasPrecision(18, 2);
             builder.Property(x => x.ProductName).IsRequired().HasMaxLength(300);
             builder.Property(x => x.IsDeleted).HasDefaultValue(false);
-            builder.Property(x => x.StripePriceId).HasMaxLength(100);
-            builder.Property(x => x.StripeProductId).HasMaxLength(100);
+
             builder.HasIndex(x => x.OrderId);
         }
     }

@@ -71,7 +71,7 @@ builder.Services.Configure<AuthenticationOption>(builder.Configuration.GetSectio
 //});
 
 //C2:
-builder.Services.AddDbContextPool<ManagerCafeDbContext>(opts =>
+builder.Services.AddDbContext<ManagerCafeDbContext>(opts =>
     opts.UseSqlServer(builder.Configuration.GetConnectionString("ManagerCafe")));
 
 //builder.Services.Configure<Setting>(builder.Configuration.GetSection("AppSettings"));
@@ -107,16 +107,17 @@ builder.Services.AddTransient<IUserTypeRepository, UserTypeRepository>();
 builder.Services.AddTransient<IUserTypeService, UserTypeService>();
 builder.Services.AddTransient<IUserValidate, UserValidate>();
 builder.Services.AddTransient<IUserCacheService, UserCacheService>();
-builder.Services.AddTransient<IOrderCacheService, OrderCacheService>();
-builder.Services.AddTransient<IOrderDetailCacheService, OrderDetailCacheService>();
-builder.Services.AddTransient<IOrderDetailService, OrderDetailService>();
 builder.Services.AddTransient<ICartService, CartService>();
+builder.Services.AddTransient<IOrderService, OrderService>();
+builder.Services.AddTransient<IOrderRepository, OrderRepository>();
 builder.Services.AddAutoMapper(typeof(ProductProfile));
 builder.Services.AddAutoMapper(typeof(WareHouseProfile));
 builder.Services.AddAutoMapper(typeof(InventoryProfile));
 builder.Services.AddAutoMapper(typeof(InventoryTransactionProfile));
 builder.Services.AddAutoMapper(typeof(UserTypeProfile));
 builder.Services.AddAutoMapper(typeof(CartProfile));
+builder.Services.AddAutoMapper(typeof(OrderProfile));
+builder.Services.AddAutoMapper(typeof(OrderDetailProfile));
 builder.Services.AddMemoryCache();
 IConnectionMultiplexer multiplexer = ConnectionMultiplexer.Connect(configuration["Redis:Configuration"]);
 builder.Services.AddSingleton(multiplexer);

@@ -8,8 +8,8 @@ namespace ManagerCafe.Applications.Profiles
     {
         public OrderDetailProfile()
         {
+            CreateMap<CreateOrderDetailDto, OrderDetail>();
             CreateMap<OrderDetail, OrderDetailDto>();
-            //CreateMap<Create>
         }
     }
 }
