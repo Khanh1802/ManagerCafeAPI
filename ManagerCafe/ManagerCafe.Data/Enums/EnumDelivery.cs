@@ -6,7 +6,6 @@ namespace ManagerCafe.Data.Enums
     {
         [Display(Name = "Visit")]
         Visit = 1,
-
         [Display(Name = "Ship")]
         Ship = 2,
     }

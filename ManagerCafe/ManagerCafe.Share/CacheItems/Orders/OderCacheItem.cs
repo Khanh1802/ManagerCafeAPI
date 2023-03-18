@@ -8,6 +8,6 @@ namespace ManagerCafe.Share.CacheItems.Orders
         public Guid CustomerId { get; set; }
         public decimal TotalBill { get; set; }
         public string Code { get; set; }
-        public EnumOrderDelivery Status { get; set; }
+        public EnumDelivery Status { get; set; }
     }
 }

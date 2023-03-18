@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ManagerCafe.Contracts.Dtos.CartDtos;
+using ManagerCafe.Data.Models;
 
 namespace ManagerCafe.Applications.Profiles
 {
@@ -8,6 +9,7 @@ namespace ManagerCafe.Applications.Profiles
         public CartProfile()
         {
             CreateMap<CreateCartDto, CartDetailDto>();
+            CreateMap<CartDetailDto, OrderDetail>();
         }
     }
 }

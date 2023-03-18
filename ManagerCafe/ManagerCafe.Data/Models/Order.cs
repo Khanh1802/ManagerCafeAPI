@@ -12,7 +12,7 @@ namespace ManagerCafe.Data.Models
         public Guid Id { get; set; }
         public decimal TotalBill { get; set; }
         public string Code { get; set; }
-        public EnumOrderDelivery Delivery { get; set; }
+        public EnumDelivery Delivery { get; set; }
         public DateTime CreateTime { get; set; }    
         public DateTime? DeletetionTime { get; set; }
         public DateTime? LastModificationTime { get; set; }

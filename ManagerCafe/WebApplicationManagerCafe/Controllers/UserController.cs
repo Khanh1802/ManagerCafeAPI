@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ManagerCafe.Contracts.Dtos.UsersDtos;
 using ManagerCafe.Contracts.Services;
-using ManagerCafe.Share.Settings;
 using ManagerCafeAPI.Options;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
