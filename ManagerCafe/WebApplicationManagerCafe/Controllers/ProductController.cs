@@ -17,7 +17,7 @@ namespace ManagerCafeAPI.Controllers
         {
             _productService = productService;
         }
-
+        [AllowAnonymous]
         [HttpPost("GetAll")]
         public async Task<IActionResult> GetAllAsync([FromBody] FilterProductDto filter)
         {
@@ -124,5 +124,30 @@ namespace ManagerCafeAPI.Controllers
                 });
             }
         }
+
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetByIdAsync(Guid id)
+        {
+            try
+            {
+                var product = await _productService.GetByIdAsync(id);
+
+                return Ok(new
+                {
+                    IsSuccess = true,
+                    Data = product
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = "Serve error " + ex.Message
+                });
+            }
+        }
+
     }
 }

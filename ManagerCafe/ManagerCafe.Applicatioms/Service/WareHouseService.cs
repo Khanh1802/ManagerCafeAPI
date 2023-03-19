@@ -5,10 +5,10 @@ using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Commons;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Data;
-using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Applications.Service
 {
@@ -153,7 +153,7 @@ namespace ManagerCafe.Applications.Service
         public async Task<CommonPageDto<WareHouseDto>> GetPagedListAsync(FilterWareHouseDto item)
         {
             var query = await FilterQueryAbleAsync(item);
-            var count = query.CountAsync(); query = query.Skip(item.SkipCount).Take(item.TakeMaxResultCount);
+            var count = query.CountAsync(); query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
             return new CommonPageDto<WareHouseDto>(await count, item,
                 _mapper.Map<List<WareHouse>, List<WareHouseDto>>(await query.ToListAsync()));
         }

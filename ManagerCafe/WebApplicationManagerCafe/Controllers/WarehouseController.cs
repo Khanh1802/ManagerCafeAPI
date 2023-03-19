@@ -11,12 +11,14 @@ namespace ManagerCafeAPI.Controllers
     public class WarehouseController : ControllerBase
     {
         private readonly IWareHouseService _warehouseService;
-
-        public WarehouseController(IWareHouseService warehouseService)
+        private readonly ILogger<WarehouseController> _logger;
+        public WarehouseController(IWareHouseService warehouseService, ILogger<WarehouseController> logger)
         {
             _warehouseService = warehouseService;
+            _logger = logger;
         }
 
+        [AllowAnonymous]
         [HttpPost("GetAll")]
         public async Task<IActionResult> GetAllAsync([FromBody] FilterWareHouseDto filter)
         {
@@ -26,11 +28,12 @@ namespace ManagerCafeAPI.Controllers
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = data.Data
+                    Data = data
                 });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex.Message);
                 return StatusCode(StatusCodes.Status500InternalServerError, new
                 {
                     IsSuccess = false,

@@ -1,4 +1,5 @@
 ﻿using ManagerCafe.Contracts.Dtos.InventoryTransactionDtos;
+using ManagerCafe.Contracts.Dtos.Orders;
 using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Contracts.Services
@@ -11,5 +12,6 @@ namespace ManagerCafe.Contracts.Services
         Task<List<InventoryTransactionDto>> FilterHistoryFindAsync(FilterInventoryTransactionDto item);
         Task<CommonPageDto<InventoryTransactionDto>> GetPagedStatisticListAsync(FilterInventoryTransactionDto item);
         Task<CommonPageDto<InventoryTransactionDto>> GetPagedHistoryListAsync(FilterInventoryTransactionDto item);
+        Task<List<InventoryTransactionDto>> UpdateOrderAsync(OrderDto item);
     }
 }

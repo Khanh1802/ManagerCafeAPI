@@ -21,6 +21,7 @@ namespace ManagerCafe.Data.Configurations
             builder.HasIndex(x => x.ProductId);
             builder.HasIndex(x => x.WareHouseId);
             builder.HasIndex(x => x.IsDeleted);
+            builder.HasIndex(x => new { x.ProductId, x.WareHouseId, x.IsDeleted }).IsUnique();
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using ManagerCafe.Applications.Service;
-using ManagerCafe.Contracts.Dtos.InventoryDtos;
+﻿using ManagerCafe.Contracts.Dtos.InventoryDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Share.Exceptions;
 using Microsoft.AspNetCore.Authorization;
@@ -19,7 +18,7 @@ namespace ManagerCafeAPI.Controllers
             _inventoryService = inventoryService;
         }
         [HttpPost("GetAll")]
-        public async Task<IActionResult> GetAllAsync([FromBody]FilterInventoryDto filter)
+        public async Task<IActionResult> GetAllAsync([FromBody] FilterInventoryDto filter)
         {
             try
             {
@@ -27,7 +26,7 @@ namespace ManagerCafeAPI.Controllers
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = data.Data
+                    Data = data
                 });
             }
             catch (Exception ex)
@@ -85,7 +84,7 @@ namespace ManagerCafeAPI.Controllers
                     Data = create
                 });
             }
-            catch(ConflictException ex)
+            catch (ConflictException ex)
             {
                 return StatusCode(StatusCodes.Status409Conflict, new
                 {
@@ -113,6 +112,52 @@ namespace ManagerCafeAPI.Controllers
                 {
                     IsSuccess = true,
                     Mesage = "UpdateAsync success"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = "Server error " + ex.Message
+                });
+            }
+        }
+
+        [HttpGet("get-by-product/{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProductInventory(Guid id)
+        {
+            try
+            {
+                var get = await _inventoryService.GetProductInventoryAsync(id);
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    IsSuccess = true,
+                    Data = get
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = "Server error " + ex.Message
+                });
+            }
+        }
+
+        [HttpPost("get-by-listProduct/")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetProductInventory([FromBody]List<Guid> id)
+        {
+            try
+            {
+                var get = await _inventoryService.GetProductInventoryAsync(id);
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    IsSuccess = true,
+                    Data = get
                 });
             }
             catch (Exception ex)

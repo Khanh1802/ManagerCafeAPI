@@ -47,7 +47,7 @@ namespace ManagerCafeAPI.Controllers
                 return StatusCode(StatusCodes.Status200OK, new
                 {
                     IsSuccess = true,
-                    Data = inventoryHistory.Data,
+                    Data = inventoryHistory
                 });
             }
             catch (Exception ex)

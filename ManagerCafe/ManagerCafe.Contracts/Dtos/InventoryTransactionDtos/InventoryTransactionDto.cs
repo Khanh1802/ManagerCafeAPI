@@ -1,5 +1,4 @@
 ﻿using ManagerCafe.Data.Enums;
-using ManagerCafe.Data.Models;
 
 namespace ManagerCafe.Contracts.Dtos.InventoryTransactionDtos
 {
