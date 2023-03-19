@@ -9,7 +9,9 @@ namespace ManagerCafe.Applications.Profiles
         public InventoryProfile()
         {
             CreateMap<Inventory, InventoryDto>();
-            //.ForMember(x => x.ProductName, opt => opt.MapFrom(o => o.Product != null ? o.Product.Name : string.Empty));
+            CreateMap<Inventory, ProductInventoryDto>()
+                .ForMember(x => x.Quantity, o => o.MapFrom(x => x.Quatity))
+                .ForMember(x => x.WarehouseName, o => o.MapFrom(x => x.WareHouse.Name));
             CreateMap<CreatenInvetoryDto, Inventory>();
             CreateMap<FilterInventoryDto, Inventory>();
             CreateMap<UpdateInventoryDto, Inventory>();
