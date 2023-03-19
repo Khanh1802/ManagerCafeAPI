@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using ManagerCafe.Contracts.Dtos.InventoryDtos;
 
 namespace ManagerCafe.Contracts.Dtos.ProductDtos
 {
@@ -11,5 +12,7 @@ namespace ManagerCafe.Contracts.Dtos.ProductDtos
         public decimal PriceSell { get; set; }
         public DateTime CreateTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
+
+        public List<ProductInventoryDto> Inventories { get; set; }
     }
 }

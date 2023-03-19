@@ -114,7 +114,7 @@ namespace ManagerCafe.Applications.Service
 
                 queryBuilder = queryBuilder
                     .Skip(item.SkipCount)
-                    .Take(item.TakeMaxResultCount);
+                    .Take(item.MaxResultCount);
 
                 return new CommonPageDto<InventoryTransactionDto>(totalCount, item, await queryBuilder.ToListAsync());
             }
@@ -160,7 +160,7 @@ namespace ManagerCafe.Applications.Service
                         query = query.OrderByDescending(x => x.Quatity);
                         break;
                 }
-                query = query.Skip(item.SkipCount).Take(item.TakeMaxResultCount);
+                query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
                 return new CommonPageDto<InventoryTransactionDto>(await count, item, _mapper.Map<List<InventoryTransaction>, List<InventoryTransactionDto>>(await query.ToListAsync()));
             }
             return new CommonPageDto<InventoryTransactionDto>();

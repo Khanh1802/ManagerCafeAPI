@@ -33,7 +33,7 @@ namespace ManagerCafeAPI.Controllers
             {
                 _logger.LogError(ex, "Error");
                 return StatusCode(StatusCodes.Status500InternalServerError, new
-                {   
+                {
                     IsSuccess = false,
                     Message = $"{ex.Message}"
                 });

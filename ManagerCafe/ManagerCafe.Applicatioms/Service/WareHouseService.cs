@@ -153,7 +153,7 @@ namespace ManagerCafe.Applications.Service
         public async Task<CommonPageDto<WareHouseDto>> GetPagedListAsync(FilterWareHouseDto item)
         {
             var query = await FilterQueryAbleAsync(item);
-            var count = query.CountAsync(); query = query.Skip(item.SkipCount).Take(item.TakeMaxResultCount);
+            var count = query.CountAsync(); query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
             return new CommonPageDto<WareHouseDto>(await count, item,
                 _mapper.Map<List<WareHouse>, List<WareHouseDto>>(await query.ToListAsync()));
         }

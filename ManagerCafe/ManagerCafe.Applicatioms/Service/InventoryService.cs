@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ManagerCafe.Contracts.Dtos.InventoryDtos;
 using ManagerCafe.Contracts.Dtos.InventoryTransactionDtos;
-using ManagerCafe.Contracts.Dtos.OrderDetails;
 using ManagerCafe.Contracts.Dtos.WareHouseDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
@@ -12,6 +11,8 @@ using ManagerCafe.Share.Commons;
 using ManagerCafe.Share.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
+using StackExchange.Redis;
 
 namespace ManagerCafe.Applications.Service
 {
@@ -21,16 +22,18 @@ namespace ManagerCafe.Applications.Service
         private readonly IMemoryCache _memoryCache;
         private readonly IMapper _mapper;
         private readonly IInventoryTransactionService _inventoryTransactionService;
+        private readonly IDatabase _redis;
         private readonly ManagerCafeDbContext _context;
 
         public InventoryService(IInventoryRepository inventoryRepository, IMapper mapper, ManagerCafeDbContext context,
-            IInventoryTransactionService inventoryTransactionService, IMemoryCache memoryCache)
+            IInventoryTransactionService inventoryTransactionService, IMemoryCache memoryCache, IDatabase redis)
         {
             _inventoryRepository = inventoryRepository;
             _mapper = mapper;
             _context = context;
             _inventoryTransactionService = inventoryTransactionService;
             _memoryCache = memoryCache;
+            _redis = redis;
         }
 
         public async Task<InventoryDto> AddAsync(CreatenInvetoryDto item)
@@ -175,7 +178,7 @@ namespace ManagerCafe.Applications.Service
                         break;
                 }
 
-                query = query.Skip(item.SkipCount).Take(item.TakeMaxResultCount);
+                query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
                 return new CommonPageDto<InventoryDto>(await count, item,
                     _mapper.Map<List<Inventory>, List<InventoryDto>>(await query.ToListAsync()));
             }
@@ -222,7 +225,7 @@ namespace ManagerCafe.Applications.Service
             }
             catch (Exception ex)
             {
-                //Nếu có lỗi trong lúc donw xuống db thì trả lại như cũ
+                //Nếu có lỗi trong lúc down xuống db thì trả lại như cũ
                 await transaction.RollbackAsync();
                 throw ex.GetBaseException();
             }
@@ -260,16 +263,51 @@ namespace ManagerCafe.Applications.Service
             return await inventoryOrderDetails.FirstOrDefaultAsync();
         }
 
-        //public async Task LogicProcessing(List<OrderDetailCacheItem> orderDetailCacheItems)
-        //{
-        //    var orderDetails = _mapper.Map<List<OrderDetailCacheItem>, List<OrderDetailDto>>(orderDetailCacheItems);
+        /// <summary>
+        /// Take total warehouse
+        /// </summary>
+        /// <param name="productId"></param>
+        /// <returns>productInventories</returns>
+        public async Task<List<ProductInventoryDto>> GetProductInventoryAsync(Guid productId)
+        {
+            //Step 1: doc redis
+            //Step 2: Co thi tra ve luon
+            //Step 3: Ko co thi xuong Db lay
+            var cacheKey = new RedisKey($"Inventory:{productId}");
 
-        //    var queryInventory = await _inventoryRepository.GetQueryableAsync();
-        //    orderDetails = orderDetails
-        //        .Where(x => queryInventory.Select(k => k.ProductId).Contains(x.ProductId))
-        //        .ToList();
-        //}
+            var getRedis = await _redis.StringGetAsync(cacheKey);
+            if (getRedis.HasValue)
+            {
+                var productInventories = JsonConvert.DeserializeObject<List<ProductInventoryDto>>(getRedis.ToString());
+                return productInventories;
+            }
 
+            var inventory = await _inventoryRepository.GetQueryableAsync();
+            var warehouses = await inventory
+                .Include(x => x.WareHouse)
+                .Where(x => x.ProductId == productId).ToListAsync();
+            var result = _mapper.Map<List<Inventory>, List<ProductInventoryDto>>(warehouses);
+            var convertJson = JsonConvert.SerializeObject(result);
+            var redisValue = new RedisValue(convertJson);
+            await _redis.StringSetAsync(cacheKey, redisValue, TimeSpan.FromHours(2));
+            return result;
+        }
+        /// <summary>
+        /// Take total warehouse
+        /// </summary>
+        /// <param name="productIds"></param>
+        /// <returns>Guid and productInventories</returns>
+        public async Task<Dictionary<Guid, List<ProductInventoryDto>>> GetProductInventoryAsync(List<Guid> productIds)
+        {
+            var result = new Dictionary<Guid, List<ProductInventoryDto>>();
+            foreach (var productId in productIds)
+            {
+                var productInventory = await GetProductInventoryAsync(productId);
+                result.Add(productId,productInventory);
+            }
+
+            return result;
+        }
         public Task<List<InventoryDto>> FilterAsync(FilterInventoryDto item)
         {
             throw new NotImplementedException();

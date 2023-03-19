@@ -1,6 +1,6 @@
 ﻿using AutoMapper;
 using AutoMapper.QueryableExtensions;
-using ManagerCafe.Contracts.Dtos.Orders;
+using ManagerCafe.Contracts.Dtos.InventoryDtos;
 using ManagerCafe.Contracts.Dtos.ProductDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
@@ -11,6 +11,8 @@ using ManagerCafe.Share.Commons;
 using ManagerCafe.Share.Exceptions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
+using StackExchange.Redis;
 
 namespace ManagerCafe.Applications.Service
 {
@@ -20,14 +22,17 @@ namespace ManagerCafe.Applications.Service
         private readonly IMapper _mapper;
         private readonly IMemoryCache _memoryCache;
         private readonly ManagerCafeDbContext _context;
-
+        private readonly IInventoryService _inventoryService;
+        private readonly IDatabase _redis;
         public ProductService(IProductRepository productRepository, IMapper mapper, IMemoryCache memoryCache,
-            ManagerCafeDbContext context)
+            ManagerCafeDbContext context, IInventoryService inventoryService, IDatabase redis)
         {
             _productRepository = productRepository;
             _mapper = mapper;
             _memoryCache = memoryCache;
             _context = context;
+            _inventoryService = inventoryService;
+            _redis = redis;
         }
 
         public async Task<ProductDto> AddAsync(CreateProductDto item)
@@ -106,21 +111,51 @@ namespace ManagerCafe.Applications.Service
 
         public async Task<ProductDto> GetByIdAsync(Guid key)
         {
-            if (_memoryCache.TryGetValue<Product>(key, out var product))
+            //if (_memoryCache.TryGetValue<Product>(key, out var product))
+            //{
+            //    return _mapper.Map<Product, ProductDto>(product);
+            //}
+            //var entity = await _productRepository.GetByIdAsync(key);
+            //if (!entity.IsDeleted)
+            //{
+            //    _memoryCache.Set<Product>(key, entity, new MemoryCacheEntryOptions
+            //    {
+            //        AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2)
+            //    });
+            //    return _mapper.Map<Product, ProductDto>(entity);
+            //}
+            var cacheKey = new RedisKey($"Product:{key}");
+            var cacheItem = await _redis.StringGetAsync(cacheKey);
+            var productInventory = await _inventoryService.GetProductInventoryAsync(key);
+            ProductDto result = null;
+            if (cacheItem.HasValue)
             {
-                return _mapper.Map<Product, ProductDto>(product);
-            }
-            var entity = await _productRepository.GetByIdAsync(key);
-            if (!entity.IsDeleted)
-            {
-                _memoryCache.Set<Product>(key, entity, new MemoryCacheEntryOptions
-                {
-                    AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2)
-                });
-                return _mapper.Map<Product, ProductDto>(entity);
+
+                var product = JsonConvert.DeserializeObject<Product>(cacheItem.ToString());
+                result = _mapper.Map<Product, ProductDto>(product);
+                result.Inventories ??= new List<ProductInventoryDto>();
+                result.Inventories.AddRange(productInventory);
+                return result;
             }
 
-            return null;
+            var entity = await _productRepository.GetByIdAsync(key);
+
+            if (entity == null)
+            {
+                return null;
+            }
+
+            if (!entity.IsDeleted)
+            {
+                var convertJson = JsonConvert.SerializeObject(entity);
+                var redisValue = new RedisValue(convertJson);
+                await _redis.StringSetAsync(cacheKey, redisValue);
+            }
+
+            result = _mapper.Map<Product, ProductDto>(entity);
+            result.Inventories ??= new List<ProductInventoryDto>();
+            result.Inventories.AddRange(productInventory);
+            return result;
         }
 
         public async Task<ProductDto> UpdateAsync(Guid id, UpdateProductDto item)
@@ -167,11 +202,10 @@ namespace ManagerCafe.Applications.Service
 
         public async Task<CommonPageDto<ProductDto>> GetPagedListAsync(FilterProductDto item)
         {
-            if (Enum.IsDefined(typeof(EnumProductFilter), item.Choice))
-            {
+           
                 var query = await FilterQueryAbleAsync(item);
                 var count = query.CountAsync();
-                switch ((EnumProductFilter)item.Choice)
+                switch (item.Choice)
                 {
                     case EnumProductFilter.PriceAsc:
                         query = query.OrderBy(x => x.PriceSell);
@@ -187,12 +221,17 @@ namespace ManagerCafe.Applications.Service
                         break;
                 }
 
-                query = query.Skip(item.SkipCount).Take(item.TakeMaxResultCount);
-                return new CommonPageDto<ProductDto>(await count, item,
+                query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
+                var products = new CommonPageDto<ProductDto>(await count, item,
                     _mapper.Map<List<Product>, List<ProductDto>>(await query.ToListAsync()));
+
+
+            foreach (var product in products.Data)
+            {
+                product.Inventories = await _inventoryService.GetProductInventoryAsync(product.Id);
             }
 
-            return new CommonPageDto<ProductDto>();
+            return products;
         }
 
         //public async Task<List<T>> SearchProductAsync<T>(FilterProductDto filter) where T : class
@@ -210,12 +249,12 @@ namespace ManagerCafe.Applications.Service
                 products = products.Where(x => EF.Functions.Like(x.Name, $"%{filter.Name}%"));
                 return new CommonPageDto<SearchProductDto>
                 (await products.CountAsync(), filter,
-                    await products.Skip(filter.SkipCount).Take(filter.TakeMaxResultCount).ToListAsync());
+                    await products.Skip(filter.SkipCount).Take(filter.MaxResultCount).ToListAsync());
             }
 
             return new CommonPageDto<SearchProductDto>
             (await products.CountAsync(), filter,
-                await products.Skip(filter.SkipCount).Take(filter.TakeMaxResultCount).ToListAsync());
+                await products.Skip(filter.SkipCount).Take(filter.MaxResultCount).ToListAsync());
         }
     }
 }

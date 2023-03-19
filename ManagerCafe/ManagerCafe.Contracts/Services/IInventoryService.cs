@@ -8,6 +8,8 @@ namespace ManagerCafe.Contracts.Services
         Task<CommonPageDto<InventoryDto>> GetPagedListAsync(FilterInventoryDto item);
         Task<List<InventoryDto>> FindByIdProductAndWarehouse(FilterInventoryDto item);
         Task<InventoryOrderDetail> GetInventoryOrderDetail(Guid productId);
+        Task<List<ProductInventoryDto>> GetProductInventoryAsync(Guid productId);
+        Task<Dictionary<Guid,List<ProductInventoryDto>>> GetProductInventoryAsync(List<Guid> productIds);
 
         //Task LogicProcessing(List<OrderDetailCacheItem> orderDetailCacheItems);
     }

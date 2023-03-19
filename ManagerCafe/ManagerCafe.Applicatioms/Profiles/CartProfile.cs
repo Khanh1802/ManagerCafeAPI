@@ -9,7 +9,8 @@ namespace ManagerCafe.Applications.Profiles
         public CartProfile()
         {
             CreateMap<CreateCartDto, CartDetailDto>();
-            CreateMap<CartDetailDto, OrderDetail>();
+            CreateMap<CartDetailDto, OrderDetail>()
+                .ForMember(x => x.CreateTime, o => o.MapFrom(k => DateTime.Now));
         }
     }
 }

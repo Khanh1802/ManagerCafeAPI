@@ -15,13 +15,13 @@
         public CommonPageDto(int total, PaginationDto pagination, List<T> data)
         {
 
-            var currentPage = (int)Math.Ceiling((double)pagination.SkipCount / pagination.TakeMaxResultCount) + 1;
+            var currentPage = (int)Math.Ceiling((double)pagination.SkipCount / pagination.MaxResultCount) + 1;
             if(currentPage > 0)
             {
                 Total = total;
-                TakeMaxResultCount = pagination.TakeMaxResultCount;
+                MaxResultCount = pagination.MaxResultCount;
                 SkipCount = pagination.SkipCount;
-                TotalPage = (int)Math.Ceiling((double)Total / (currentPage * TakeMaxResultCount - SkipCount));
+                TotalPage = (int)Math.Ceiling((double)Total / (currentPage * MaxResultCount - SkipCount));
                 HasReversePage = currentPage > 1;
                 HasNextPage = currentPage < TotalPage;
                 Data = data;
