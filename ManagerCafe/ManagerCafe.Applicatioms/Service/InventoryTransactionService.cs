@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using ManagerCafe.Contracts.Dtos.InventoryTransactionDtos;
+using ManagerCafe.Contracts.Dtos.Orders;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
@@ -13,9 +14,9 @@ namespace ManagerCafe.Applications.Service
     public class InventoryTransactionService : IInventoryTransactionService
     {
         private readonly IInventoryTransactionRepository _inventoryTransactionRepository;
-        private readonly IInventoryRepository _inventoryRepository;
         private readonly ManagerCafeDbContext _context;
         private readonly IMapper _mapper;
+        private readonly IInventoryRepository _inventoryRepository;
         public InventoryTransactionService(IInventoryTransactionRepository inventoryTransactionRepository, ManagerCafeDbContext context, IMapper mapper, IInventoryRepository inventoryRepository)
         {
             _inventoryTransactionRepository = inventoryTransactionRepository;
@@ -164,6 +165,63 @@ namespace ManagerCafe.Applications.Service
                 return new CommonPageDto<InventoryTransactionDto>(await count, item, _mapper.Map<List<InventoryTransaction>, List<InventoryTransactionDto>>(await query.ToListAsync()));
             }
             return new CommonPageDto<InventoryTransactionDto>();
+        }
+
+        public async Task<List<InventoryTransactionDto>> UpdateOrderAsync(OrderDto item)
+        {
+            var queryInventoryTransaction = await _inventoryTransactionRepository.GetQueryableAsync();
+
+            foreach (var detailDtoQuantity in item.OrderDetails)
+            {
+                var queryInventory = _context.Invetories.AsQueryable();
+
+                var quantityOrder = detailDtoQuantity.Quantity;
+                while (quantityOrder > 0)
+                {
+                    //take inventory
+                    var inventory = await queryInventory
+                        .OrderByDescending(x => x.Quatity)
+                        .Where(x => x.ProductId == detailDtoQuantity.ProductId
+                                    && x.Quatity > 0)
+                        .FirstOrDefaultAsync();
+
+                    var inventoryTransaction = new CreateInventoryTransactionDto()
+                    {
+                        InventoryId = inventory.Id,
+                        Type = EnumInventoryTransation.Export
+                    };
+                    // take inventoryTransaction
+                    // 9 > 5
+                    if (inventory.Quatity >= quantityOrder)
+                    {
+                        //sub quantity of Inventory
+                        inventory.Quatity = inventory.Quatity - quantityOrder;
+                        //add quantity of InventoryTransaction
+                        inventoryTransaction.Quatity = quantityOrder;
+                        //sub quantity of order
+                        quantityOrder = 0;
+                    }
+                    else
+                    {
+                        //sub quantity of order
+                        quantityOrder = quantityOrder - inventory.Quatity;
+                        //add quantity of InventoryTransaction
+                        inventoryTransaction.Quatity = inventory.Quatity;
+                        //sub quantity of Inventory
+                        inventory.Quatity = 0;
+                    }
+                    //Update quantity inventory
+                    await _inventoryRepository.UpdateAsync(inventory);
+                    //Add inventoryTransaction
+                    await _inventoryTransactionRepository.AddAsync(_mapper.Map<CreateInventoryTransactionDto, InventoryTransaction>(inventoryTransaction));
+                }
+
+
+
+
+            }
+            return new List<InventoryTransactionDto>();
+
         }
 
         private async Task<IQueryable<InventoryTransaction>> FilterQueryAbleHistoryAsync(FilterInventoryTransactionDto item)

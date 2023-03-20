@@ -5,10 +5,10 @@ using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Commons;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Data;
-using ManagerCafe.Share.Commons;
 
 namespace ManagerCafe.Applications.Service
 {

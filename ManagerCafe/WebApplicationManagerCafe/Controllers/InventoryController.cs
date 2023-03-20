@@ -26,7 +26,7 @@ namespace ManagerCafeAPI.Controllers
                 return Ok(new
                 {
                     IsSuccess = true,
-                    Data = data.Data
+                    Data = data
                 });
             }
             catch (Exception ex)
