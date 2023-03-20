@@ -59,6 +59,11 @@ namespace ManagerCafe.Domain.Repositories
             await _context.SaveChangesAsync();
             return entity;
         }
-
+        public async Task<List<Inventory>> UpdateAsync(List<Inventory> entities)
+        {
+            _context.Invetories.UpdateRange(entities);
+            await _context.SaveChangesAsync();
+            return entities;
+        }
     }
 }

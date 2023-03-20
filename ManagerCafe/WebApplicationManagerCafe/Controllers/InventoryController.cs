@@ -89,7 +89,7 @@ namespace ManagerCafeAPI.Controllers
                 return StatusCode(StatusCodes.Status409Conflict, new
                 {
                     IsSuccess = false,
-                    Message = "Server error " + ex.Message
+                    Message = ex.Message
                 });
             }
             catch (Exception ex)
@@ -149,7 +149,7 @@ namespace ManagerCafeAPI.Controllers
 
         [HttpPost("get-by-listProduct/")]
         [AllowAnonymous]
-        public async Task<IActionResult> GetProductInventory([FromBody]List<Guid> id)
+        public async Task<IActionResult> GetProductInventory([FromBody] List<Guid> id)
         {
             try
             {

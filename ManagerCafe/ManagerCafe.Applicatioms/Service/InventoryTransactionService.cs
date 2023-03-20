@@ -169,57 +169,77 @@ namespace ManagerCafe.Applications.Service
 
         public async Task<List<InventoryTransactionDto>> UpdateOrderAsync(OrderDto item)
         {
-            var queryInventoryTransaction = await _inventoryTransactionRepository.GetQueryableAsync();
-
-            foreach (var detailDtoQuantity in item.OrderDetails)
+            var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                var queryInventory = _context.Invetories.AsQueryable();
+                var queryInventoryTransaction = await _inventoryTransactionRepository.GetQueryableAsync();
 
-                var quantityOrder = detailDtoQuantity.Quantity;
-                while (quantityOrder > 0)
+                var createInventoryTransactions = new List<CreateInventoryTransactionDto>();
+                foreach (var detailDtoQuantity in item.OrderDetails)
                 {
+                    var queryInventory = _context.Invetories.AsQueryable();
                     //take inventory
-                    var inventory = await queryInventory
+                    var inventories = await queryInventory
                         .OrderByDescending(x => x.Quatity)
                         .Where(x => x.ProductId == detailDtoQuantity.ProductId
-                                    && x.Quatity > 0)
-                        .FirstOrDefaultAsync();
+                                    && x.Quatity > 0 && !x.IsDeleted).ToListAsync();
+                    // take total quantity 
+                    var quantityOrder = detailDtoQuantity.Quantity;
 
-                    var inventoryTransaction = new CreateInventoryTransactionDto()
+                    //var updateInventories = new List<Inventory>();
+                    for (int i = 0; i < inventories.Count; i++)
                     {
-                        InventoryId = inventory.Id,
-                        Type = EnumInventoryTransation.Export
-                    };
-                    // take inventoryTransaction
-                    // 9 > 5
-                    if (inventory.Quatity >= quantityOrder)
-                    {
-                        //sub quantity of Inventory
-                        inventory.Quatity = inventory.Quatity - quantityOrder;
-                        //add quantity of InventoryTransaction
-                        inventoryTransaction.Quatity = quantityOrder;
-                        //sub quantity of order
-                        quantityOrder = 0;
+                        var inventoryTransaction = new CreateInventoryTransactionDto()
+                        {
+                            InventoryId = inventories[i].Id,
+                            Type = EnumInventoryTransation.Export,
+                            CreateTime = DateTime.Now,
+                        };
+                        // take inventoryTransaction
+                        // 9 > 5
+                        if (inventories[i].Quatity >= quantityOrder)
+                        {
+                            //sub quantity of Inventory
+                            inventories[i].Quatity = inventories[i].Quatity - quantityOrder;
+                            //add quantity of InventoryTransaction
+                            inventoryTransaction.Quatity = quantityOrder;
+                            //sub quantity of order
+                            quantityOrder = 0;
+                        }
+                        else
+                        {
+                            //sub quantity of order
+                            quantityOrder = quantityOrder - inventories[i].Quatity;
+                            //add quantity of InventoryTransaction
+                            inventoryTransaction.Quatity = inventories[i].Quatity;
+                            //sub quantity of Inventory
+                            inventories[i].Quatity = 0;
+                        }
+                        //updateInventories.Add(inventory);
+                        createInventoryTransactions.Add(inventoryTransaction);
+                        if (quantityOrder == 0)
+                        {
+                            break;
+                        }
                     }
-                    else
-                    {
-                        //sub quantity of order
-                        quantityOrder = quantityOrder - inventory.Quatity;
-                        //add quantity of InventoryTransaction
-                        inventoryTransaction.Quatity = inventory.Quatity;
-                        //sub quantity of Inventory
-                        inventory.Quatity = 0;
-                    }
+
                     //Update quantity inventory
-                    await _inventoryRepository.UpdateAsync(inventory);
-                    //Add inventoryTransaction
-                    await _inventoryTransactionRepository.AddAsync(_mapper.Map<CreateInventoryTransactionDto, InventoryTransaction>(inventoryTransaction));
+                    await _inventoryRepository.UpdateAsync(inventories);
+                    await transaction.CommitAsync();
                 }
-
-
-
-
+                //Add inventoryTransaction
+                if (createInventoryTransactions.Count > 0)
+                {
+                    await _inventoryTransactionRepository.AddAsync(_mapper.Map<List<CreateInventoryTransactionDto>, List<InventoryTransaction>>(createInventoryTransactions));
+                    await transaction.CommitAsync();
+                }
             }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw ex.GetBaseException();
+            }
+
             return new List<InventoryTransactionDto>();
 
         }

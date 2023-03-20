@@ -34,5 +34,11 @@ namespace ManagerCafe.Domain.Repositories
         {
             return Task.FromResult(_context.InventoryTransactions.AsQueryable());
         }
+
+        public async Task AddAsync(List<InventoryTransaction> items)
+        {
+            await _context.InventoryTransactions.AddRangeAsync(items);
+            await _context.SaveChangesAsync();
+        }
     }
 }

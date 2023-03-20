@@ -202,28 +202,28 @@ namespace ManagerCafe.Applications.Service
 
         public async Task<CommonPageDto<ProductDto>> GetPagedListAsync(FilterProductDto item)
         {
-           
-                var query = await FilterQueryAbleAsync(item);
-                var count = query.CountAsync();
-                switch (item.Choice)
-                {
-                    case EnumProductFilter.PriceAsc:
-                        query = query.OrderBy(x => x.PriceSell);
-                        break;
-                    case EnumProductFilter.PriceDesc:
-                        query = query.OrderByDescending(x => x.PriceSell);
-                        break;
-                    case EnumProductFilter.DateAsc:
-                        query = query.OrderBy(x => x.CreateTime);
-                        break;
-                    case EnumProductFilter.DateDesc:
-                        query = query.OrderByDescending(x => x.CreateTime);
-                        break;
-                }
 
-                query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
-                var products = new CommonPageDto<ProductDto>(await count, item,
-                    _mapper.Map<List<Product>, List<ProductDto>>(await query.ToListAsync()));
+            var query = await FilterQueryAbleAsync(item);
+            var count = query.CountAsync();
+            switch (item.Choice)
+            {
+                case EnumProductFilter.PriceAsc:
+                    query = query.OrderBy(x => x.PriceSell);
+                    break;
+                case EnumProductFilter.PriceDesc:
+                    query = query.OrderByDescending(x => x.PriceSell);
+                    break;
+                case EnumProductFilter.DateAsc:
+                    query = query.OrderBy(x => x.CreateTime);
+                    break;
+                case EnumProductFilter.DateDesc:
+                    query = query.OrderByDescending(x => x.CreateTime);
+                    break;
+            }
+
+            query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
+            var products = new CommonPageDto<ProductDto>(await count, item,
+                _mapper.Map<List<Product>, List<ProductDto>>(await query.ToListAsync()));
 
 
             foreach (var product in products.Data)
