@@ -2,7 +2,7 @@
 
 namespace ManagerCafe.Data.Enums
 {
-    public enum EnumInventoryTransation
+    public enum EnumInventoryTransationType
     {
         [Display(Name = "Nhập kho")]
         Import = 1,

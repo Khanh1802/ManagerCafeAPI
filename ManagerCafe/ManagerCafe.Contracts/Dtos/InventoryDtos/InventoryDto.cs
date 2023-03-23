@@ -13,5 +13,6 @@ namespace ManagerCafe.Contracts.Dtos.InventoryDtos
         public DateTime CreateTime { get; set; }
         public DateTime? DeletetionTime { get; set; }
         public DateTime? LastModificationTime { get; set; }
+        public decimal Price { get; set; }
     }
 }

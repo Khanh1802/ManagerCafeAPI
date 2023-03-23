@@ -6,11 +6,10 @@ namespace ManagerCafe.Contracts.Services
     public interface IInventoryService : IGenericService<InventoryDto, CreatenInvetoryDto, UpdateInventoryDto, FilterInventoryDto, Guid>
     {
         Task<CommonPageDto<InventoryDto>> GetPagedListAsync(FilterInventoryDto item);
-        Task<List<InventoryDto>> FindByIdProductAndWarehouse(FilterInventoryDto item);
-        Task<InventoryOrderDetail> GetInventoryOrderDetail(Guid productId);
+        Task<CommonPageDto<InventoryDto>> FindByIdProductAndWarehouse(FilterInventoryDto item);
         Task<List<ProductInventoryDto>> GetProductInventoryAsync(Guid productId);
-        Task<Dictionary<Guid,List<ProductInventoryDto>>> GetProductInventoryAsync(List<Guid> productIds);
-
+        Task<Dictionary<Guid, List<ProductInventoryDto>>> GetProductInventoryAsync(List<Guid> productIds);
+        Task<CommonPageDto<InventoryDto>> GetProductAndQuantityInventory(FilterInventoryDto item);
         //Task LogicProcessing(List<OrderDetailCacheItem> orderDetailCacheItems);
     }
 }
