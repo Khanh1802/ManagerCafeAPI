@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using ManagerCafe.Contracts.Dtos.InventoryDtos;
 using ManagerCafe.Contracts.Dtos.InventoryTransactionDtos;
-using ManagerCafe.Contracts.Dtos.WareHouseDtos;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Enums;
@@ -63,7 +62,7 @@ namespace ManagerCafe.Applications.Service
                     {
                         Quatity = entity.Quatity,
                         InventoryId = entity.Id,
-                        Type = EnumInventoryTransation.Import
+                        Type = EnumInventoryTransationType.Import
                     };
                     await _inventoryTransactionService.AddAsync(inventoryTransaction);
                     await transaction.CommitAsync();
@@ -146,8 +145,7 @@ namespace ManagerCafe.Applications.Service
         {
             if (Enum.IsDefined(typeof(EnumChoiceFilter), item.Choice))
             {
-                var query = await FilterQueryAbleAsync(item);
-                var count = query.CountAsync();
+                var query = await FilterQueryAbleAsync();
                 if ((item.WareHouseId.HasValue && item.ProductId.HasValue) && !item.Id.HasValue && string.IsNullOrEmpty(item.NameSearch))
                 {
                     query = query.Where(x => x.WareHouseId == item.WareHouseId);
@@ -159,8 +157,8 @@ namespace ManagerCafe.Applications.Service
                 }
                 if (!string.IsNullOrEmpty(item.NameSearch))
                 {
-                    query = query.Where(x => EF.Functions.Like(x.Product.Name, $"{item.NameSearch}") ||
-                    EF.Functions.Like(x.WareHouse.Name, $"%{item.NameSearch}%"));
+                    query = query.Where(x => EF.Functions.Like(x.Product.Name, $"%{item.NameSearch}") ||
+                    EF.Functions.Like(x.WareHouse.Name, $"%{item.NameSearch}"));
                 }
                 switch ((EnumChoiceFilter)item.Choice)
                 {
@@ -178,6 +176,7 @@ namespace ManagerCafe.Applications.Service
                         break;
                 }
 
+                var count = query.CountAsync();
                 query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
                 return new CommonPageDto<InventoryDto>(await count, item,
                     _mapper.Map<List<Inventory>, List<InventoryDto>>(await query.ToListAsync()));
@@ -186,7 +185,7 @@ namespace ManagerCafe.Applications.Service
             return new CommonPageDto<InventoryDto>();
         }
 
-        private async Task<IQueryable<Inventory>> FilterQueryAbleAsync(FilterInventoryDto item)
+        private async Task<IQueryable<Inventory>> FilterQueryAbleAsync()
         {
             var query = await _inventoryRepository.GetQueryableAsync();
             var filter = query
@@ -207,17 +206,16 @@ namespace ManagerCafe.Applications.Service
                 {
                     throw new Exception("Not found Inventory to update");
                 }
-                item.Quatity += entity.Quatity;
-                var update = _mapper.Map<UpdateInventoryDto, Inventory>(item, entity);
-                await _inventoryRepository.UpdateAsync(update);
-
+                entity.Quatity += item.Quatity;
+                await _inventoryRepository.UpdateAsync(entity);
+                await _redis.StringGetDeleteAsync($"Inventory:{id}");
                 // Khi ko bị lỗi thì save tất cả thay đổi xuống Db
                 //1
                 var inventoryTransaction = new CreateInventoryTransactionDto()
                 {
                     Quatity = item.Quatity,
                     InventoryId = id,
-                    Type = EnumInventoryTransation.Import
+                    Type = EnumInventoryTransationType.Import
                 };
                 await _inventoryTransactionService.AddAsync(inventoryTransaction);
                 await transaction.CommitAsync();
@@ -231,37 +229,40 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public async Task<List<InventoryDto>> FindByIdProductAndWarehouse(FilterInventoryDto item)
+        public async Task<CommonPageDto<InventoryDto>> FindByIdProductAndWarehouse(FilterInventoryDto item)
         {
-            var filter = await _inventoryRepository.GetQueryableAsync();
-            var InventoriesDto = filter.Include(x => x.Product).Where(k => !k.IsDeleted)
-                .Include(x => x.WareHouse).Where(x => !x.IsDeleted)
-                .Where(x => x.Product.Id == item.ProductId && x.WareHouseId == item.WareHouseId)
-                .Select(x => x).ToListAsync();
-            return _mapper.Map<List<Inventory>, List<InventoryDto>>(await InventoriesDto);
+            var query = await FilterQueryAbleAsync();
+            if (item.ProductId.HasValue && item.WareHouseId.HasValue)
+            {
+                query = query.Where(x => x.ProductId == item.ProductId && x.WareHouseId == item.WareHouseId);
+            }
+            else if (!string.IsNullOrEmpty(item.ProductName))
+            {
+                query = query.Where(x => EF.Functions.Like(x.Product.Name, $"%{item.ProductName}") && x.Quatity > 0);
+            }
+            switch ((EnumChoiceFilter)item.Choice)
+            {
+                case EnumChoiceFilter.DateAsc:
+                    query = query.OrderBy(x => x.CreateTime);
+                    break;
+                case EnumChoiceFilter.DateDesc:
+                    query = query.OrderByDescending(x => x.CreateTime);
+                    break;
+                case EnumChoiceFilter.QuatityAsc:
+                    query = query.OrderBy(x => x.Quatity);
+                    break;
+                case EnumChoiceFilter.QuatytiDesc:
+                    query = query.OrderByDescending(x => x.Quatity);
+                    break;
+            }
+
+            var countAsync = await query.CountAsync();
+            query = query.Skip(item.SkipCount).Take(item.MaxResultCount);
+            return new CommonPageDto<InventoryDto>(countAsync, item,
+                _mapper.Map<List<Inventory>, List<InventoryDto>>(await query.ToListAsync()));
         }
 
-        public async Task<InventoryOrderDetail> GetInventoryOrderDetail(Guid productId)
-        {
-            var queryInventory = await _inventoryRepository.GetQueryableAsync();
-            var inventoryOrderDetails = queryInventory
-                .Include(x => x.Product)
-                .Include(x => x.WareHouse)
-                .Where(x => x.ProductId == productId
-                            && !x.Product.IsDeleted
-                            && !x.WareHouse.IsDeleted)
-                .GroupBy(x => x.ProductId)
-                .Select(x => new InventoryOrderDetail
-                {
-                    TotalQuatity = x.Sum(x => x.Quatity),
-                    Price = x.FirstOrDefault().Product.PriceSell,
-                    ProductId = x.FirstOrDefault().ProductId,
-                    ProductName = x.FirstOrDefault().Product.Name,
-                    WareHouses = _mapper.Map<List<WareHouse>, List<WareHouseDto>>(x.Select(x => x.WareHouse).ToList())
-                });
 
-            return await inventoryOrderDetails.FirstOrDefaultAsync();
-        }
 
         /// <summary>
         /// Take total warehouse
@@ -303,7 +304,7 @@ namespace ManagerCafe.Applications.Service
             foreach (var productId in productIds)
             {
                 var productInventory = await GetProductInventoryAsync(productId);
-                result.Add(productId,productInventory);
+                result.Add(productId, productInventory);
             }
 
             return result;
@@ -312,5 +313,40 @@ namespace ManagerCafe.Applications.Service
         {
             throw new NotImplementedException();
         }
+
+        public async Task<CommonPageDto<InventoryDto>> GetProductAndQuantityInventory(FilterInventoryDto item)
+        {
+            var query = await FilterQueryAbleAsync();
+            var filter = query
+                .Where(x => x.Quatity > 0)
+                .GroupBy(x => x.ProductId)
+                .Select(x => new InventoryDto()
+                {
+                    ProductId = x.FirstOrDefault().Product.Id,
+                    Quatity = x.Sum(x => x.Quatity),
+                    Price = x.FirstOrDefault().Product.PriceSell,
+                    ProductName = x.FirstOrDefault().Product.Name,
+                });
+            switch ((EnumChoiceFilter)item.Choice)
+            {
+                case EnumChoiceFilter.DateAsc:
+                    query = query.OrderBy(x => x.CreateTime);
+                    break;
+                case EnumChoiceFilter.DateDesc:
+                    query = query.OrderByDescending(x => x.CreateTime);
+                    break;
+                case EnumChoiceFilter.QuatityAsc:
+                    query = query.OrderBy(x => x.Quatity);
+                    break;
+                case EnumChoiceFilter.QuatytiDesc:
+                    query = query.OrderByDescending(x => x.Quatity);
+                    break;
+            }
+
+            var countAsync = await filter.CountAsync();
+            filter = filter.Skip(item.SkipCount).Take(item.MaxResultCount);
+            return new CommonPageDto<InventoryDto>(countAsync, item, await filter.ToListAsync());
+        }
+
     }
 }

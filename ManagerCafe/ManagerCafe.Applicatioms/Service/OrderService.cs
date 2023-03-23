@@ -1,9 +1,14 @@
 ﻿using AutoMapper;
+using ManagerCafe.Contracts.Dtos.OrderDetails;
 using ManagerCafe.Contracts.Dtos.Orders;
 using ManagerCafe.Contracts.Services;
 using ManagerCafe.Data.Data;
 using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
+using ManagerCafe.Share.Commons;
+using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
+using Order = ManagerCafe.Data.Models.Order;
 
 namespace ManagerCafe.Applications.Service
 {
@@ -14,9 +19,10 @@ namespace ManagerCafe.Applications.Service
         private readonly IMapper _mapper;
         private readonly IInventoryService _inventoryService;
         private readonly IInventoryTransactionService _inventoryTransactionService;
+        private readonly IDatabase _redis;
         private readonly ManagerCafeDbContext _context;
 
-        public OrderService(IOrderRepository orderRepository, IMapper mapper, ManagerCafeDbContext context, ICartService cartService, IInventoryService inventoryService, IInventoryTransactionService inventoryTransactionService)
+        public OrderService(IOrderRepository orderRepository, IMapper mapper, ManagerCafeDbContext context, ICartService cartService, IInventoryService inventoryService, IInventoryTransactionService inventoryTransactionService, IDatabase redis)
         {
             _orderRepository = orderRepository;
             _mapper = mapper;
@@ -24,6 +30,7 @@ namespace ManagerCafe.Applications.Service
             _cartService = cartService;
             _inventoryService = inventoryService;
             _inventoryTransactionService = inventoryTransactionService;
+            _redis = redis;
         }
 
         public async Task<OrderDto> CreateAsync(CreateOrderDto item)
@@ -75,6 +82,7 @@ namespace ManagerCafe.Applications.Service
                 //    }
                 //}
                 #endregion
+
                 var dictionary = item.OrderDetails.ToDictionary(x => x.ProductId, x => x.Quantity);
                 var productInventoryDictionary = await _inventoryService.GetProductInventoryAsync(dictionary.Keys.ToList());
                 foreach (var product in productInventoryDictionary)
@@ -88,8 +96,9 @@ namespace ManagerCafe.Applications.Service
                     }
                 }
                 var create = await _orderRepository.AddAsync(entity);
+
                 await _inventoryTransactionService.UpdateOrderAsync(_mapper.Map<Order, OrderDto>(create));
-                    await transaction.CommitAsync();
+                await transaction.CommitAsync();
                 await _cartService.DeleteCartAsync(item.Phone);
                 return _mapper.Map<Order, OrderDto>(create);
             }
@@ -100,8 +109,24 @@ namespace ManagerCafe.Applications.Service
             }
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task<CommonPageDto<OrderDto>> GetAsync(FilterOrderDto item)
         {
+            var query = await _orderRepository.GetQueryableAsync();
+            var filter = query
+                .Include(x => x.OrderDetails)
+                .Where(x => x.CreateTime >= item.FromDate && x.CreateTime <= item.ToDate);
+            var countAsync = await filter.CountAsync();
+            filter = filter.Skip(item.SkipCount).Take(item.MaxResultCount);
+            return new CommonPageDto<OrderDto>(countAsync, item, _mapper.Map<List<Order>, List<OrderDto>>(await filter.ToListAsync()));
+        }
+
+        public async Task<List<OrderDetailDto>> GetById(Guid id)
+        {
+            var query = _context.OrderDetails.AsQueryable();
+
+            var filter = await query
+                .Where(x => x.OrderId == id).ToListAsync();
+            return _mapper.Map<List<OrderDetail>, List<OrderDetailDto>>(filter);
         }
     }
 }

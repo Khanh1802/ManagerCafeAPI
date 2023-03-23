@@ -8,6 +8,7 @@ using ManagerCafe.Data.Models;
 using ManagerCafe.Domain.Repositories;
 using ManagerCafe.Share.Commons;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 namespace ManagerCafe.Applications.Service
 {
@@ -79,46 +80,43 @@ namespace ManagerCafe.Applications.Service
 
         public async Task<CommonPageDto<InventoryTransactionDto>> GetPagedStatisticListAsync(FilterInventoryTransactionDto item)
         {
-            if (Enum.IsDefined(typeof(EnumInventoryTransactionFilter), item.Choice))
+            var queryBuilder = await FilterPageAsync(item);
+            var totalCount = await queryBuilder.CountAsync();
+
+            switch (item.Choice)
             {
-                //var query = 
-                var queryBuilder = await FilterPageAsync(item);
-                var totalCount = await queryBuilder.CountAsync();
-
-                switch ((EnumInventoryTransactionFilter)item.Choice)
-                {
-                    case EnumInventoryTransactionFilter.DateAsc:
-                        {
-                            queryBuilder = queryBuilder
-                                .OrderBy(x => x.CreateTime);
-                            break;
-                        }
-                    case EnumInventoryTransactionFilter.DateDesc:
-                        {
-                            queryBuilder = queryBuilder
-                                .OrderByDescending(x => x.CreateTime);
-                            break;
-                        }
-                    case EnumInventoryTransactionFilter.QuatityAsc:
-                        {
-                            queryBuilder = queryBuilder
-                                .OrderBy(x => x.Quatity);
-                            break;
-                        }
-                    case EnumInventoryTransactionFilter.QuatytiDesc:
-                        {
-                            queryBuilder = queryBuilder
-                                .OrderByDescending(x => x.Quatity);
-                            break;
-                        }
-                }
-
-                queryBuilder = queryBuilder
-                    .Skip(item.SkipCount)
-                    .Take(item.MaxResultCount);
-
-                return new CommonPageDto<InventoryTransactionDto>(totalCount, item, await queryBuilder.ToListAsync());
+                case EnumInventoryTransactionFilter.DateAsc:
+                    {
+                        queryBuilder = queryBuilder
+                            .OrderBy(x => x.CreateTime);
+                        break;
+                    }
+                case EnumInventoryTransactionFilter.DateDesc:
+                    {
+                        queryBuilder = queryBuilder
+                            .OrderByDescending(x => x.CreateTime);
+                        break;
+                    }
+                case EnumInventoryTransactionFilter.QuatityAsc:
+                    {
+                        queryBuilder = queryBuilder
+                            .OrderBy(x => x.Quatity);
+                        break;
+                    }
+                case EnumInventoryTransactionFilter.QuatytiDesc:
+                    {
+                        queryBuilder = queryBuilder
+                            .OrderByDescending(x => x.Quatity);
+                        break;
+                    }
             }
+
+            queryBuilder = queryBuilder
+                .Skip(item.SkipCount)
+                .Take(item.MaxResultCount);
+
+            return new CommonPageDto<InventoryTransactionDto>(totalCount, item, await queryBuilder.ToListAsync());
+
             return new CommonPageDto<InventoryTransactionDto>();
         }
 
@@ -169,7 +167,6 @@ namespace ManagerCafe.Applications.Service
 
         public async Task<List<InventoryTransactionDto>> UpdateOrderAsync(OrderDto item)
         {
-            var transaction = await _context.Database.BeginTransactionAsync();
             try
             {
                 var queryInventoryTransaction = await _inventoryTransactionRepository.GetQueryableAsync();
@@ -189,10 +186,11 @@ namespace ManagerCafe.Applications.Service
                     //var updateInventories = new List<Inventory>();
                     for (int i = 0; i < inventories.Count; i++)
                     {
+                        inventories[i].LastModificationTime = DateTime.Now;
                         var inventoryTransaction = new CreateInventoryTransactionDto()
                         {
                             InventoryId = inventories[i].Id,
-                            Type = EnumInventoryTransation.Export,
+                            Type = EnumInventoryTransationType.Export,
                             CreateTime = DateTime.Now,
                         };
                         // take inventoryTransaction
@@ -222,21 +220,17 @@ namespace ManagerCafe.Applications.Service
                             break;
                         }
                     }
-
                     //Update quantity inventory
                     await _inventoryRepository.UpdateAsync(inventories);
-                    await transaction.CommitAsync();
                 }
                 //Add inventoryTransaction
                 if (createInventoryTransactions.Count > 0)
                 {
                     await _inventoryTransactionRepository.AddAsync(_mapper.Map<List<CreateInventoryTransactionDto>, List<InventoryTransaction>>(createInventoryTransactions));
-                    await transaction.CommitAsync();
                 }
             }
             catch (Exception ex)
             {
-                await transaction.RollbackAsync();
                 throw ex.GetBaseException();
             }
 

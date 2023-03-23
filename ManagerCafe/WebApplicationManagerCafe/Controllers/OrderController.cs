@@ -1,5 +1,6 @@
 ﻿using ManagerCafe.Contracts.Dtos.Orders;
 using ManagerCafe.Contracts.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ManagerCafeAPI.Controllers
@@ -17,7 +18,7 @@ namespace ManagerCafeAPI.Controllers
             _logger = logger;
         }
 
-        [HttpPost]
+        [HttpPost()]
         public async Task<IActionResult> CreateAsync([FromBody] CreateOrderDto item)
         {
             try
@@ -27,6 +28,54 @@ namespace ManagerCafeAPI.Controllers
                 {
                     IsSuccess = true,
                     Data = createAsync
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error");
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = $"{ex.Message}"
+                });
+            }
+        }
+
+        [HttpPost("getall")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllAsync([FromBody] FilterOrderDto item)
+        {
+            try
+            {
+                var getAll = await _orderService.GetAsync(item);
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    IsSuccess = true,
+                    Data = getAll
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error");
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = $"{ex.Message}"
+                });
+            }
+        }
+
+        [HttpGet("{id}")]
+        [AllowAnonymous]
+        public async Task<IActionResult> GetAllAsync(Guid id)
+        {
+            try
+            {
+                var orderDetailDtos = await _orderService.GetById(id);
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    IsSuccess = true,
+                    Data = orderDetailDtos
                 });
             }
             catch (Exception ex)

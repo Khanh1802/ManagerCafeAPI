@@ -17,6 +17,7 @@ namespace ManagerCafeAPI.Controllers
         {
             _inventoryService = inventoryService;
         }
+        [AllowAnonymous]
         [HttpPost("GetAll")]
         public async Task<IActionResult> GetAllAsync([FromBody] FilterInventoryDto filter)
         {
@@ -124,8 +125,8 @@ namespace ManagerCafeAPI.Controllers
             }
         }
 
-        [HttpGet("get-by-product/{id}")]
         [AllowAnonymous]
+        [HttpGet("get-by-product/{id}")]
         public async Task<IActionResult> GetProductInventory(Guid id)
         {
             try
@@ -147,8 +148,8 @@ namespace ManagerCafeAPI.Controllers
             }
         }
 
-        [HttpPost("get-by-listProduct/")]
         [AllowAnonymous]
+        [HttpPost("get-by-listProduct/")]
         public async Task<IActionResult> GetProductInventory([FromBody] List<Guid> id)
         {
             try
@@ -158,6 +159,29 @@ namespace ManagerCafeAPI.Controllers
                 {
                     IsSuccess = true,
                     Data = get
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    IsSuccess = false,
+                    Message = "Server error " + ex.Message
+                });
+            }
+        }
+
+        [AllowAnonymous]
+        [HttpPost("get-product-quantity-inventory")]
+        public async Task<IActionResult> GetProductQuantityInventory([FromBody] FilterInventoryDto item)
+        {
+            try
+            {
+                var data = await _inventoryService.GetProductAndQuantityInventory(item);
+                return StatusCode(StatusCodes.Status200OK, new
+                {
+                    IsSuccess = true,
+                    Data = data
                 });
             }
             catch (Exception ex)
